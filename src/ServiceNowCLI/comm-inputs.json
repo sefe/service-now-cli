@@ -1,0 +1,9 @@
+{
+  "ApplicationName": "AppName",
+  "ApplicationAlias": "AppAlias",
+  "ChangeImpact": "AppName will be unavailable during the change window",
+  "PointOfContact": "AppSupport Team",
+  "UserActions": "There are no user actions required for this release. If you have any questions or issues please reach out to App Support Team.",
+  "ChangeDescriptionStart": "We have a planned AppName release, which comprises the following PBIs:",
+  "ChangeDescriptionEnd": ""
+}
