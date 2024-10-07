@@ -35,4 +35,10 @@
         unsuccessful,
         successful_issues
     }
+
+    public static class CloseFields
+    {
+        public static string Reason = "reason";
+        public static string CloseNotes = "close_notes";
+    }
 }

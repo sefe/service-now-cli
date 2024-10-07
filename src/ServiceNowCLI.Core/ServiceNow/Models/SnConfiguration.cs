@@ -30,7 +30,7 @@ namespace ServiceNowCLI.Core.ServiceNow
 
             var defaultCloseParams = new Dictionary<string, string>()
                 {
-                    { "close_notes",  "auto closed from API"}
+                    { CloseFields.CloseNotes,  "auto closed from API"}
                 };
 
             SnConfiguration getConfig(CrStates[] arr, Dictionary<string, string> par, CrStates st)

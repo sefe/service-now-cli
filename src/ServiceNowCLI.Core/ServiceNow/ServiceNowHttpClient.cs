@@ -77,7 +77,7 @@ namespace ServiceNowCLI.Core.ServiceNow
                 var crState = cr.state.ToEnum<CrStates>(); 
                 var preCloseState = configurations[crType].CrWorkflow.Find(CrStates.Closed).Previous.Value;
                 UpdateCRStateFromTo(cr.sys_id, crType, crState, preCloseState);
-                return SetCrStateClosed(cr.sys_id, successfully ? CrCloseCodes.successful : CrCloseCodes.unsuccessful, configurations[crType].ClosedStateParams["close_notes"]);
+                return SetCrStateClosed(cr.sys_id, successfully ? CrCloseCodes.successful : CrCloseCodes.unsuccessful, configurations[crType].ClosedStateParams);
             }
             return false;
         }
@@ -159,12 +159,13 @@ namespace ServiceNowCLI.Core.ServiceNow
             });
         }
 
-        private bool SetCrStateClosed(string sysId, CrCloseCodes close_code, string close_notes)
+        private bool SetCrStateClosed(string sysId, CrCloseCodes close_code, Dictionary<string, string> closeParams)
         {
             return SetCrStateWithBody(sysId, CrStates.Closed, new SnChangeRequestModel
             {
                 close_code = close_code.ToString(),
-                close_notes = close_notes,
+                close_notes = closeParams[CloseFields.CloseNotes],
+                reason = closeParams[CloseFields.Reason]
             });
         }
 

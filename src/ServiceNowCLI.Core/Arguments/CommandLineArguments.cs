@@ -17,8 +17,8 @@ namespace ServiceNowCLI.Core.Arguments
         [Option('b', "buildnumber", Required = true, HelpText = "Azure DevOps Build Number to attach to the Change Request.")]
         public string BuildNumber { get; set; }
 
-        [Option('e', "environmentname", Required = true, HelpText = "Azure DevOps Environment Name to detect Prod & non Prod deployment.")]
-        public string EnvironmentName { get; set; }
+        [Option('e', "environment", Required = true, HelpText = "If set to 'Prod' or 'Production', the tool will validate the branch name, and created tag in PBI won't contain 'dv'")]
+        public string Environment { get; set; }
 
         [Option('u', "requestedby", Required = true, HelpText = "The display name of the identity that triggered (started) the deployment currently in progress.")]
         public string ReleaseDeploymentRequestedFor { get; set; }

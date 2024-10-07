@@ -78,7 +78,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var changeDescriptionGenerator = new ChangeDescriptionGenerator();
 
             var build = GetBuildForRelease(releaseLogic, buildLogic, arguments);
-            var isProd = IsReleaseEnvironmentProd(arguments.EnvironmentName);
+            var isProd = IsReleaseEnvironmentProd(arguments.Environment);
 
             Console.WriteLine($"Got build, BuildNumber={build.BuildNumber}, BuildId={build.Id}");
 
@@ -220,20 +220,20 @@ namespace ServiceNowCLI.Core.AzureDevOps
             }
         }
 
-        private bool IsReleaseEnvironmentProd(string envName)
+        private bool IsReleaseEnvironmentProd(string envinronment)
         {
-            if (string.IsNullOrEmpty(envName))
+            if (string.IsNullOrEmpty(envinronment))
             {
-                Console.WriteLine($"No Release.EnvironmentName variable, so assuming that is Prod");
-                return true;
-            }
-            envName = envName.ToLower();
-            if (envName.Contains("ut") || envName.Contains("dv") || envName.Contains("uat") || envName.Contains("dev"))
-            {
+                Console.WriteLine($"No 'environment' parameter passed, so assuming that is Non-Prod");
                 return false;
             }
+            envinronment = envinronment.ToLower();
+            if (envinronment == "prod" || envinronment == "production")
+            {
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
         private void AddCrNumberTagToPbis(
