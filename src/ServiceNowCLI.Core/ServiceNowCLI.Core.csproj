@@ -287,7 +287,6 @@
     <Compile Include="ServiceNow\Models\SnChangeRequestResponseModel.cs" />
     <Compile Include="ServiceNow\Models\SnConfiguration.cs" />
     <Compile Include="ServiceNow\ServiceNowHttpClient.cs" />
-    <Compile Include="ServiceNow\SNAuthenticator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

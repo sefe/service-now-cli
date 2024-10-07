@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.Services.Common.CommandLine;
 using Newtonsoft.Json;
 using RestSharp;
+using RestSharp.Authenticators;
 using RestSharp.Serializers.Json;
 using ServiceNowCLI.Core.Extensions;
 using System;
@@ -17,11 +18,11 @@ namespace ServiceNowCLI.Core.ServiceNow
         private readonly Dictionary<CrTypes, SnConfiguration> configurations;
         readonly RestClient _client;
 
-        public ServiceNowHttpClient(string serviceNowUri, string subscriptionId)
+        public ServiceNowHttpClient(string serviceNowUri, string subscriptionId, string bearerToken)
         {
             var options = new RestClientOptions(serviceNowUri)
             {
-                Authenticator = new SNAuthenticator(subscriptionId)
+                Authenticator = new JwtAuthenticator(bearerToken),
             };
 
             _client = new RestClient(options,
@@ -29,6 +30,8 @@ namespace ServiceNowCLI.Core.ServiceNow
                 {
                     s.UseSystemTextJson(new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
                 });
+            _client.AddDefaultHeader("ocp-apim-subscription-key", subscriptionId);
+
             configurations = SnConfiguration.GetDefault();
         }
 

@@ -34,7 +34,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var successName = successfully ? "Succeeded" : "Failed";
             Console.WriteLine("Setting Activity " + opts.Activity + $" To {successName}.");
 
-            var client = new ServiceNowHttpClient(opts.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId);
+            var client = new ServiceNowHttpClient(opts.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId, _tokenHandler.GetToken());
 
             var isCompleted = client.CompleteCR(opts.ChangeNo, successfully);
             
@@ -53,7 +53,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
         public void CancelCrs(CancelCrsOptions opts)
         {
             var nums = opts.ChangeNums.Split(',').Select(p => p.Trim()).Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
-            var client = new ServiceNowHttpClient(opts.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId);
+            var client = new ServiceNowHttpClient(opts.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId, _tokenHandler.GetToken());
 
             foreach (var number in nums)
             {
@@ -254,7 +254,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             Console.WriteLine($"Submitting CR: {JsonConvert.SerializeObject(changeRequest, Formatting.Indented)}");
             try
             {
-                var httpClient = new ServiceNowHttpClient(arguments.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId);
+                var httpClient = new ServiceNowHttpClient(arguments.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId, _tokenHandler.GetToken());
                 var crNumber = httpClient.CreateCR(changeRequest);
 
                 return crNumber;
