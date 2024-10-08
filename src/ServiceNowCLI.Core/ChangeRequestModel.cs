@@ -32,12 +32,7 @@ namespace ServiceNowCLI.Core
                 ScheduledEndDate = ((DateTime)scheduledEndDate.Start).ToUniversalTime();
 
             start_date = ScheduledStartDate.ToString(DateTimeFormat);
-            end_date = ScheduledEndDate.ToString(DateTimeFormat);
-            short_description = inputs.Title;
-            description = inputs.Description;
-            justification = inputs.Reason;
-            work_notes = inputs.Notes;
-            test_plan = inputs.TestPlan;
+            end_date = ScheduledEndDate.ToString(DateTimeFormat);            
 
             assignment_group = inputs.assignment_group;
             backout_plan = inputs.backout_plan;
@@ -45,16 +40,21 @@ namespace ServiceNowCLI.Core
             category = inputs.category;
             chg_model = inputs.chg_model;
             correlation_id = inputs.correlation_id;
+            description = inputs.description;
             impact = inputs.impact;
             implementation_plan = inputs.implementation_plan;
+            justification = inputs.justification;
             priority = inputs.priority;
             reason = inputs.reason;
             requested_by = inputs.requested_by;
             risk = inputs.risk;
             risk_impact_analysis = inputs.risk_impact_analysis;
+            short_description = inputs.short_description;
             std_change_producer_version = inputs.std_change_producer_version;
+            test_plan = inputs.test_plan;
             type = inputs.type;
             urgency = inputs.urgency;
+            work_notes = inputs.work_notes;
         }
 
         public string assignment_group { get; set; }

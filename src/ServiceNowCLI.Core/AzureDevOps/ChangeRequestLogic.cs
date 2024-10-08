@@ -1,4 +1,5 @@
-﻿using Microsoft.TeamFoundation.Build.WebApi;
+﻿using Fluid;
+using Microsoft.TeamFoundation.Build.WebApi;
 using Newtonsoft.Json;
 using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Arguments;
@@ -69,8 +70,9 @@ namespace ServiceNowCLI.Core.AzureDevOps
         private void CreateNewChangeRequest(CreateCrOptions arguments)
         {
             Console.WriteLine($"CreateNewChangeRequest - arguments: {JsonConvert.SerializeObject(arguments)}");
+            string inputContent = GetInputFileString(arguments);
 
-            var crInputs = JsonConvert.DeserializeObject<CreateChangeRequestInput>(File.ReadAllText(arguments.CrParamsFile));
+            var crInputs = JsonConvert.DeserializeObject<CreateChangeRequestInput>(inputContent);
             var commSettings = GetCommSettings(arguments.CommParamsFile);
             var buildLogic = new BuildLogic(arguments.CollectionUri, crInputs.TeamProjectName, _adoSettings, _tokenHandler, _vssConnectionFactory);
             var workItemLogic = new WorkItemLogic(arguments.CollectionUri, crInputs.TeamProjectName, _adoSettings, _tokenHandler, _vssConnectionFactory);
@@ -105,6 +107,36 @@ namespace ServiceNowCLI.Core.AzureDevOps
                     commSettings,
                     isProd);
             }
+        }
+
+        private static string GetInputFileString(CreateCrOptions arguments)
+        {
+            string inputContent;
+            if (!string.IsNullOrEmpty(arguments.TransformTemplateFile))
+            {
+                Console.WriteLine($"using template '{arguments.TransformTemplateFile}' to transform input file");
+                var parser = new FluidParser();
+                var template = File.ReadAllText(arguments.TransformTemplateFile);
+
+                if (parser.TryParse(template, out var compiledTemplate, out var error))
+                {
+                    var model = JsonConvert.DeserializeObject<object>(File.ReadAllText(arguments.CrParamsFile));
+
+                    var context = new TemplateContext(model);
+
+                    inputContent = compiledTemplate.Render(context);
+                }
+                else
+                {
+                    throw new ArgumentException($"Template parsing failed: {error}");
+                }
+            }
+            else
+            {
+                inputContent = File.ReadAllText(arguments.CrParamsFile);
+            }
+
+            return inputContent;
         }
 
         private Build GetBuildForRelease(ReleaseLogic releaseLogic, BuildLogic buildLogic, CreateCrOptions arguments)
@@ -273,18 +305,9 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             return new ChangeRequestModel(crInputs)
             {
-                backout_plan = crInputs.ImplementationPlan.Rollback,
-                implementation_plan = $"Pre Production: {Environment.NewLine}" +
-                                     $"{crInputs.ImplementationPlan.PreProduction}{Environment.NewLine}" +
-                                     $"=================================={Environment.NewLine}" +
-                                     $"Production:{Environment.NewLine}{crInputs.ImplementationPlan.Production}",
-                short_description = crInputs.Title,
-                justification = crInputs.Reason,
-                test_plan = crInputs.TestPlan,
                 description =
                     $"The following enhancements will be delivered by this CR:{Environment.NewLine}{crDescription}",
                 requested_by = arguments.ReleaseDeploymentRequestedFor,
-                work_notes = crInputs.Notes
             };
         } 
 

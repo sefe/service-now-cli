@@ -12,8 +12,8 @@ using ServiceNowCLI.Core.AzureDevOps;
 namespace ServiceNowCLI
 {
     // Sample cmd line -
-    // createcr -s "http://ServiceNowApi" -c "https://vsrm.dev.azure.com/org" -b "BuildNumber_21.11.22.1" -r "ReleaseNumber_21.11.22.1-Release_01" -e "AzEnvironmentName" -u "user" -p "cr-inputs.json" -i "15151" -m "comm-inputs.json"
-    // createcr -s "http://ServiceNowApi" -c "https://vsrm.dev.azure.com/org" -b "BuildNumber_21.11.22.1" -r "ReleaseNumber_21.11.22.1-Release_01" -e "AzEnvironmentName" -u "user" -p "cr-inputs.json" -i "15151" -m "comm-inputs.json" -x "CR18962"
+    // createcr -s "http://ServiceNowApi" -c "https://vsrm.dev.azure.com/org" -b "BuildNumber_21.11.22.1" -r "ReleaseNumber_21.11.22.1-Release_01" -e "AzEnvironmentName" -u "user" -p "cr-inputs.json" -t "template.liquid" -i "15151" -m "comm-inputs.json"
+    // createcr -s "http://ServiceNowApi" -c "https://vsrm.dev.azure.com/org" -b "BuildNumber_21.11.22.1" -r "ReleaseNumber_21.11.22.1-Release_01" -e "AzEnvironmentName" -u "user" -p "cr-inputs.json" -t "template.liquid" -i "15151" -m "comm-inputs.json" -x "CR18962"
     // activitysuccess -s "http://ServiceNowApi" -c "https://vsrm.dev.azure.com/org" -a "CR Implementation Phase" -c "CR8188" 
     // setreleasevariable -c "https://vsrm.dev.azure.com/org" -t "ProjectName" -i "13157" -n "Comms_ReleaseID" -v "123456"
     // createcr -s "http://ServiceNowApi" -c "https://vsrm.dev.azure.com/org" -b "BuildNumber_23.11.3.2" -r "ReleaseNumber_23.11.3.2-Release_01" -e "AzEnvironmentName" -u "user" -p "cr-inputs.json" -i "35313" -m "comm-inputs.json"

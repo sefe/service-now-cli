@@ -37,6 +37,9 @@ namespace ServiceNowCLI.Core.Arguments
 
         [Option('x', "existingCr", Required = false, Default = "", HelpText = "Existing CR number")]
         public string ExistingCr { get; set; }
+        
+        [Option('t', "transformtemplatefile", Required = false, HelpText = "The liquid template file which should be applied to crparamsfile before to produce the correct input.")]
+        public string TransformTemplateFile { get; set; }
 
         public bool IncludeAllLinkedWorkItems => WorkItemLinking == "All";
     }

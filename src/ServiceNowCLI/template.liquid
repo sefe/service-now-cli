@@ -1,0 +1,18 @@
+{
+	"ScheduledStartDate": "{{ScheduledStartDate}}",
+	"ScheduledEndDate": "{{ScheduledEndDate}}",
+	"BranchingStrategy": "{{BranchingStrategy}}",
+	"TeamProjectName": "{{TeamProjectName}}",
+
+	"assignment_group": "{{assignment_group | default: 'Change Manager'}}",
+	"chg_model": "{{chg_model | default: 'Standard'}}", 
+	"backout_plan": "{{ImplementationPlan.Rollback}}",
+	"implementation_plan": "Pre Production: \r\n{{ImplementationPlan.PreProduction}}\r\n==================================\r\nProduction:\r\n{{ImplementationPlan.Production}}",
+	"short_description": "{{Title}}",
+	"justification": "{{Reason}}",
+	"test_plan": "{{TestPlan}}",
+	"work_notes": "{{Notes}}",
+	"risk_impact_analysis": "OutageOrRestrictedFunctionality: {{ImpactQuestionResponses.OutageOrRestrictedFunctionality}};\r\n ServiceImpactedOnFailure: {{ImpactQuestionResponses.ServiceImpactedOnFailure}};\r\nCriticality: {{ImpactQuestionResponses.Criticality}}",
+	"type": "{{type | default: 'standard'}}",
+	"risk": "{{risk | default: 'Low'}}"
+}

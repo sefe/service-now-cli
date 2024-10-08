@@ -19,14 +19,8 @@
 
     public class CreateChangeRequestInput
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Reason { get; set; }
-        public string Notes { get; set; }
         public string ScheduledStartDate { get; set; }
         public string ScheduledEndDate { get; set; }
-        public InstallInstructions ImplementationPlan { get; set; }
-        public string TestPlan { get; set; }
         public BranchingStrategies BranchingStrategy { get; set; }
         public string TeamProjectName { get; set; }
 
@@ -37,6 +31,7 @@
         public string category { get; set; }
         public string chg_model { get; set; }
         public string correlation_id { get; set; }
+        public string description { get; set; }
         public string impact { get; set; }
         public string implementation_plan { get; set; }
         public string justification { get; set; }
@@ -45,10 +40,12 @@
         public string requested_by { get; set; }
         public string risk { get; set; }
         public string risk_impact_analysis { get; set; }
+        public string short_description { get; set; }
         public string std_change_producer_version { get; set; }
         public string test_plan { get; set; }
         public string type { get; set; }
         public string urgency { get; set; }
+        public string work_notes { get; set; }
         #endregion
     }
 }

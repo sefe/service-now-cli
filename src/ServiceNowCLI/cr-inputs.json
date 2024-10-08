@@ -1,23 +1,19 @@
 {
-  "Title": "[Company] [Tribe] Release new/updates to AppName",
-  "Reason": "Automated Release for AppName.",
-  "Priority": "Low",
-  "Notes": "",
   "ScheduledStartDate": "now",
   "ScheduledEndDate": "in 1 hour",
-  "ImplementationPlan": {
-    "PreProduction": "No Pre-prod is used for AppName.",
-    "Production": "Execute Azure DevOps release $(Release.ReleaseName) with build $(Release.Artifacts.NewBuild.BuildNumber)",
-    "Rollback": "Please re-run the previously successful PROD Release version"
-  },
-  "TestPlan": "AppName is tested in production by the business, no UAT sign-off.",
   "BranchingStrategy": "GitHubFlow",
   "TeamProjectName": "AzureDevOpsProjectName",
 
-  "type": "Standard",
-  "business_service": "AppName",
-  "assignment_group": "TribeNamee",
-  "category": "AppCategory",
+  "assignment_group": "TribeName",
   "chg_model": "Standard",
+  "business_service": "AppName",
+  "backout_plan": "Please re-run the previously successful PROD Release version",
+  "implementation_plan": "Pre Production: \r\nNo Pre-prod is used for AppName.\r\n==================================\r\nProduction:\r\nExecute Azure DevOps release $(Release.ReleaseName) with build $(Release.Artifacts.NewBuild.BuildNumber)",
+  "short_description": "[Company] [Tribe] Release new/updates to AppName",
+  "justification": "Automated Release for AppName.",
+  "test_plan": "AppName is tested in production by the business, no UAT sign-off.",
+  "work_notes": "",
+  "risk_impact_analysis": "OutageOrRestrictedFunctionality: false;\r\n ServiceImpactedOnFailure: false;\r\nCriticality: Minor",
+  "type": "Standard",
   "risk": "Low"
 }
