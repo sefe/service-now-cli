@@ -1,0 +1,80 @@
+name: $(BuildDefinitionName)_$(year:yy).$(Month).$(DayOfMonth)$(Rev:.r)
+
+trigger:
+- main
+- release/*
+
+pool:
+  name: BUILD-DOTNET-01
+
+variables:  
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  dropFolder: '$(dropfolder)'
+  projectKey: 'sh-devops-service-now-cli'
+  majorVersion: '1'
+  minorVersion: '0'
+  patchVersion: '0'
+  version: '$(majorVersion).$(minorVersion).$(patchVersion)'
+
+steps:
+- task: NuGetToolInstaller@0
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: SonarQubePrepare@5
+  displayName: 'Prepare the SonarQube analysis'
+  inputs:
+    SonarQube: 'SonarQube'
+    scannerMode: 'MSBuild'
+    projectKey: '$(projectKey)'
+    projectName: '$(projectKey)'
+    projectVersion: '$(Build.BuildNumber)'
+  continueOnError: false
+
+- task: richardfennellbm.BM-VSTS-Versioning-Task.Version-Assemblies-Task.VersionAssemblies@2
+  displayName: 'Version Assemblies'
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: SonarQubeAnalyze@5
+
+- task: SynopsysDetectTask@9
+  inputs:
+    BlackDuckService: 'BlackDuck'
+    DetectArguments: |
+      --detect.project.name="$(projectKey)"
+      --detect.project.version.name="$(projectKey)-$(Build.SourceBranchName)"
+      --detect.source.path=$(Build.SourcesDirectory)
+      --detect.tools.excluded=SIGNATURE_SCAN
+      --detect.detector.search.depth=5
+    DetectVersion: 'latest'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))
+
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+  inputs:
+    SourceFolder: '$(system.defaultworkingdirectory)'
+    Contents: '**\bin\$(BuildConfiguration)\**'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    publishLocation: FilePath
+    TargetPath: '$(dropFolder)\$(Build.BuildNumber)'
+  condition: succeeded()
