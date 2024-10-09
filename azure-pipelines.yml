@@ -99,7 +99,6 @@ stages:
       displayName: 'Deploy CLI'
       environment: 
         name: ${{variables.environmentName}}
-        resourceType: VirtualMachine
       strategy:
         runOnce:
           deploy:
