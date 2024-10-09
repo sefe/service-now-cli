@@ -90,8 +90,9 @@ stages:
 
   - stage: DeployTest
     variables:
-      environmentName: 'Test'
       - group: 'cli-config Test'
+      - name: environmentName
+        value: 'Test'
     displayName: Deploy
     dependsOn: [Build]
     condition: succeeded()
