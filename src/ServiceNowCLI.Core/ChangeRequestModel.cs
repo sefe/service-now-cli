@@ -11,7 +11,7 @@ namespace ServiceNowCLI.Core
         public ChangeRequestModel(CreateChangeRequestInput inputs)
         {
             // dates should be in GMT, SM will shift to local
-            var parser = new Chronic.Parser();
+            var parser = new Chronic.Core.Parser();
             var scheduledStartDate = parser.Parse(inputs.ScheduledStartDate);
             if (scheduledStartDate == null)
             {
