@@ -93,29 +93,24 @@ stages:
       environmentName: 'Test'
     displayName: Deploy
     dependsOn: [Build]
+    trigger: manual
     condition: succeeded()
     jobs:
-    - deployment: DeployJob
+    - job: DeployJob
       displayName: 'Deploy CLI'
-      environment: 
-        name: ${{variables.environmentName}}
-        resourceType: VirtualMachine
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - download: none
-            - task: CopyFiles@2
-              displayName: 'copy to common folder'
-              inputs:
-                SourceFolder: '$(targetFolder)\$(Build.BuildNumber)\drop\src\ServiceNowCLI\bin\$(BuildConfiguration)\net8.0-windows\'
-                Contents: '*.*'
-                TargetFolder: '$(targetDeployFolder)\${{variables.environmentName}}'
-                CleanTargetFolder: true
-                OverWrite: true
-            - task: FileTransform@2
-              displayName: 'set configuration values'
-              inputs:
-                folderPath: '$(targetDeployFolder)\${{variables.environmentName}}'
+      steps:
+      - download: none
+      - task: CopyFiles@2
+        displayName: 'copy to common folder'
+        inputs:
+          SourceFolder: '$(targetFolder)\$(Build.BuildNumber)\drop\src\ServiceNowCLI\bin\$(BuildConfiguration)\net8.0-windows\'
+          Contents: '*.*'
+          TargetFolder: '$(targetDeployFolder)\${{variables.environmentName}}'
+          CleanTargetFolder: true
+          OverWrite: true
+      - task: FileTransform@2
+        displayName: 'set configuration values'
+        inputs:
+          folderPath: '$(targetDeployFolder)\${{variables.environmentName}}'
 
 
