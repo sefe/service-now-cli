@@ -17,6 +17,7 @@ namespace ServiceNowCLI.Core.ServiceNow
 
         private readonly Dictionary<CrTypes, SnConfiguration> configurations;
         readonly RestClient _client;
+        private bool disposedValue;
 
         public ServiceNowHttpClient(string serviceNowUri, string subscriptionId, string bearerToken)
         {
@@ -169,9 +170,22 @@ namespace ServiceNowCLI.Core.ServiceNow
             });
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _client?.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
         public void Dispose()
         {
-            _client?.Dispose();
+            Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }
