@@ -91,6 +91,7 @@ stages:
   - stage: DeployTest
     variables:
       environmentName: 'Test'
+      - group: 'cli-config Test'
     displayName: Deploy
     dependsOn: [Build]
     condition: succeeded()
@@ -115,4 +116,4 @@ stages:
             - task: FileTransform@2
               displayName: 'set configuration values'
               inputs:
-                folderPath: '$(targetDeployFolder)\${{variables.environmentName}}'
+                folderPath: '$(targetDeployFolder)\${{variables.environmentName}}\*.config'
