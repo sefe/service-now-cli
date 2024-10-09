@@ -35,8 +35,8 @@ steps:
     projectVersion: '$(Build.BuildNumber)'
   continueOnError: false
 
-- task: richardfennellbm.BM-VSTS-Versioning-Task.Version-Assemblies-Task.VersionAssemblies@2
-  displayName: 'Version Assemblies'
+- task: richardfennellbm.BM-VSTS-Versioning-Task.Version-DotNetCoreAssemblies-Task.VersionDotNetCoreAssemblies@3
+  displayName: 'Version .NET Core Assemblies'
 
 - task: VSBuild@1
   inputs:
