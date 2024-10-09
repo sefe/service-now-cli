@@ -117,4 +117,5 @@ stages:
             - task: FileTransform@2
               displayName: 'set configuration values'
               inputs:
-                folderPath: '$(targetDeployFolder)\${{variables.environmentName}}/*.config'
+                folderPath: '$(targetDeployFolder)\${{variables.environmentName}}'
+                xmlTargetFiles: 'ServiceNowCLI.dll.config'
