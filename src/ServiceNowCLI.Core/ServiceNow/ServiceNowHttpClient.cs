@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Services.Common.CommandLine;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.VisualStudio.Services.Common.CommandLine;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
@@ -53,7 +54,7 @@ namespace ServiceNowCLI.Core.ServiceNow
                 return res.result.number;
             }
 
-            throw new ApplicationException($"CR creation failed with code {response.StatusCode}, content: {response.Content}");
+            throw new BadHttpRequestException($"CR creation failed with code {response.StatusCode}, content: {response.Content}");
         }
 
         private void UpdateCRStateFromTo(string sys_id, CrTypes type, CrStates fromState, CrStates toState)

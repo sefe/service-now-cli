@@ -38,7 +38,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             Console.WriteLine($"Getting recent builds... starting getting last {howManyMonthsAgo} months");
 
             string continuationToken = null;
-            List<BuildDefinitionReference> buildDefinitions = new List<BuildDefinitionReference>();
+            List<BuildDefinitionReference> buildDefinitions = [];
 
             do
             {
@@ -61,7 +61,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 {
                     IPagedList<Build> buildsPage = _buildsClient.GetBuildsAsync2(statusFilter: BuildStatus.Completed,
                         project: _teamProjectName, resultFilter: BuildResult.Succeeded,
-                        definitions: new List<int> { buildDefinitionReference.Id },
+                        definitions: [buildDefinitionReference.Id],
                         continuationToken: continuationToken).Result;
 
                     builds.AddRange(buildsPage);

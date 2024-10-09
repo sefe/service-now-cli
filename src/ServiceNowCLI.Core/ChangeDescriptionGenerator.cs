@@ -17,13 +17,13 @@ namespace ServiceNowCLI.Core
                 var workItemTitle = workItem.Fields["System.Title"].ToString();
                 var changeDescription = $"{workItemType} {workItem.Id}: {workItemTitle}";
 
-                if (!changeDescriptions.Keys.Contains(changeDescription))
+                if (!changeDescriptions.ContainsKey(changeDescription))
                 {
                     changeDescriptions.Add(changeDescription, true);
                 }
             }
 
-            if (!changeDescriptions.Any())
+            if (changeDescriptions.Count == 0)
             {
                 throw new ArgumentException(
                     "No linked PBI's have been found on this build to be able to attach to CR!");

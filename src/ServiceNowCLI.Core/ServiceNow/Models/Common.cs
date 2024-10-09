@@ -2,12 +2,12 @@
 {
     public class ResultArray<T>
     {
-        public T[] result;
+        public readonly T[] result;
     }
 
     public class ResultObject<T>
     {
-        public T result;
+        public readonly T result;
     }
 
     public enum CrStates
@@ -38,7 +38,7 @@
 
     public static class CloseFields
     {
-        public static string Reason = "reason";
-        public static string CloseNotes = "close_notes";
+        public static readonly string Reason = "reason";
+        public static readonly string CloseNotes = "close_notes";
     }
 }

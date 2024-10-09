@@ -1,6 +1,5 @@
-﻿using System;
-using ServiceNowCLI.Config.Dtos;
-using ServiceNowCLI.Core.Extensions;
+﻿using ServiceNowCLI.Config.Dtos;
+using System;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {

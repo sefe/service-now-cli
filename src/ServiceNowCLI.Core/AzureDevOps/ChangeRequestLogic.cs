@@ -12,18 +12,11 @@ using System.Text;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class ChangeRequestLogic
+    public class ChangeRequestLogic(AzureDevOpsSettings adoSettings, IAzureDevOpsTokenHandler tokenHandler, IVssConnectionFactory vssConnectionFactory)
     {
-        private readonly AzureDevOpsSettings _adoSettings;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler;
-        private readonly IVssConnectionFactory _vssConnectionFactory;
-
-        public ChangeRequestLogic(AzureDevOpsSettings adoSettings, IAzureDevOpsTokenHandler tokenHandler, IVssConnectionFactory vssConnectionFactory)
-        {
-            _adoSettings = adoSettings;
-            _tokenHandler = tokenHandler;
-            _vssConnectionFactory = vssConnectionFactory;
-        }
+        private readonly AzureDevOpsSettings _adoSettings = adoSettings;
+        private readonly IAzureDevOpsTokenHandler _tokenHandler = tokenHandler;
+        private readonly IVssConnectionFactory _vssConnectionFactory = vssConnectionFactory;
 
         public void CreateChangeRequest(CreateCrOptions arguments)
         {
