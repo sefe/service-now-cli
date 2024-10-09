@@ -12,7 +12,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   targetBuildFolder: '$(dropfolder)'
-  targetDeployFolder: '$(targetDeployFolder)'
+  targetDeployFolder: '$(deployFolder)'
   projectKey: 'sh-devops-service-now-cli'
   majorVersion: '1'
   minorVersion: '0'
