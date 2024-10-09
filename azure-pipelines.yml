@@ -37,6 +37,8 @@ steps:
 
 - task: richardfennellbm.BM-VSTS-Versioning-Task.Version-DotNetCoreAssemblies-Task.VersionDotNetCoreAssemblies@3
   displayName: 'Version .NET Core Assemblies'
+  inputs:
+    AddDefault: true
 
 - task: VSBuild@1
   inputs:
