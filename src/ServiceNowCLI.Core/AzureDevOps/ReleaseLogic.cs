@@ -15,11 +15,6 @@ namespace ServiceNowCLI.Core.AzureDevOps
         AzureDevOpsSettings adoSettings,
         IAzureDevOpsTokenHandler tokenHandler)
     {
-        private readonly string _teamProjectName = teamProjectName;
-        private readonly string _collectionUri = azureDevOpsServer;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler = tokenHandler;
-        private readonly AzureDevOpsSettings _adoSettings = adoSettings;
-
         public void UpdateReleaseVariables(string releaseId, Dictionary<string, string> variableNamesAndValues)
         {
             var releaseClient = GetReleaseClient(releaseId);
@@ -56,9 +51,9 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private RestClient GetReleaseClient(string releaseId)
         {
-            var clientUri = AzureDevOpsApiUriBuilder.GetUriForReleaseId(_collectionUri, _teamProjectName, releaseId);
-            var accessToken = _tokenHandler.GetToken();
-            var options = RestClientOptionsBuilder.GetRestClientOptions(_adoSettings, accessToken, clientUri);
+            var clientUri = AzureDevOpsApiUriBuilder.GetUriForReleaseId(azureDevOpsServer, teamProjectName, releaseId);
+            var accessToken = tokenHandler.GetToken();
+            var options = RestClientOptionsBuilder.GetRestClientOptions(adoSettings, accessToken, clientUri);
             return new RestClient(options);
         }
 

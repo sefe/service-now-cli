@@ -12,16 +12,13 @@ namespace ServiceNowCLI.Config
 
     public class DorcConfigProvider(string dorcApiBaseUrl, string dorcEnvironment) : IDorcConfigProvider
     {
-        private readonly string _dorcApiBaseUrl = dorcApiBaseUrl;
-        private readonly string _dorcEnvironment = dorcEnvironment;
-
         public string GetDorcPropertyValue(string dorcPropertyName)
         {
             var httpClientHandler = new HttpClientHandler { UseDefaultCredentials = true };
 
-            var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(_dorcApiBaseUrl) };
+            var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(dorcApiBaseUrl) };
 
-            var response = httpClient.GetAsync($"PropertyValues?environmentName={_dorcEnvironment}&propertyName={dorcPropertyName}").GetAwaiter().GetResult();
+            var response = httpClient.GetAsync($"PropertyValues?environmentName={dorcEnvironment}&propertyName={dorcPropertyName}").GetAwaiter().GetResult();
             var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
             var dorcPropertyValue = JsonConvert.DeserializeObject<DorcPropertyValue[]>(responseContent);
