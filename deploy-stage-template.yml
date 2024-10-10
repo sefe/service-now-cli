@@ -26,11 +26,11 @@ stages:
               inputs:
                 SourceFolder: '${{ parameters.buildFolder }}\$(Build.BuildNumber)\drop\src\ServiceNowCLI\bin\$(BuildConfiguration)\net8.0-windows\'
                 Contents: '*.*'
-                TargetFolder: '$(parameters.deployFolder)\${{ parameters.environment }}'
+                TargetFolder: '${{parameters.deployFolder}}\${{ parameters.environment }}'
                 CleanTargetFolder: true
                 OverWrite: true
             - task: FileTransform@2
               displayName: 'Set Configuration Values'
               inputs:
-                folderPath: '$(parameters.deployFolder)\${{ parameters.environment }}'
+                folderPath: '${{parameters.deployFolder}}\${{ parameters.environment }}'
                 xmlTargetFiles: 'ServiceNowCLI.dll.config'
