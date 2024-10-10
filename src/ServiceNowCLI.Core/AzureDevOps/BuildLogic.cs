@@ -101,7 +101,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             {
                 var fullResponseJson = JsonConvert.SerializeObject(getResponse);
                 Console.WriteLine($"GET request was not successful. FullResponse={fullResponseJson}");
-                throw new Exception(getResponse.ErrorMessage);
+                throw new ArgumentException(getResponse.ErrorMessage);
             }
 
             var build = JsonConvert.DeserializeObject<Build>(getResponse.Content);

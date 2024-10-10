@@ -2,12 +2,12 @@
 {
     public class ResultArray<T>
     {
-        public readonly T[] result;
+        public T[] result;
     }
 
     public class ResultObject<T>
     {
-        public readonly T result;
+        public T result;
     }
 
     public enum CrStates

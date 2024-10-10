@@ -14,10 +14,6 @@ namespace ServiceNowCLI.Core.AzureDevOps
 {
     public class ChangeRequestLogic(AzureDevOpsSettings adoSettings, IAzureDevOpsTokenHandler tokenHandler, IVssConnectionFactory vssConnectionFactory)
     {
-        private readonly AzureDevOpsSettings _adoSettings = adoSettings;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler = tokenHandler;
-        private readonly IVssConnectionFactory _vssConnectionFactory = vssConnectionFactory;
-
         public void CreateChangeRequest(CreateCrOptions arguments)
         {
             CreateNewChangeRequest(arguments);
@@ -28,7 +24,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var successName = successfully ? "Succeeded" : "Failed";
             Console.WriteLine("Setting Activity " + opts.Activity + $" To {successName}.");
 
-            var client = new ServiceNowHttpClient(opts.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId, _tokenHandler.GetToken());
+            var client = new ServiceNowHttpClient(opts.ServiceNowApi, adoSettings.ServiceNowApiSubscriptionId, tokenHandler.GetToken());
 
             var isCompleted = client.CompleteCR(opts.ChangeNo, successfully);
             
@@ -47,7 +43,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
         public void CancelCrs(CancelCrsOptions opts)
         {
             var nums = opts.ChangeNums.Split(',').Select(p => p.Trim()).Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
-            var client = new ServiceNowHttpClient(opts.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId, _tokenHandler.GetToken());
+            var client = new ServiceNowHttpClient(opts.ServiceNowApi, adoSettings.ServiceNowApiSubscriptionId, tokenHandler.GetToken());
 
             foreach (var number in nums)
             {
@@ -67,9 +63,9 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             var crInputs = JsonConvert.DeserializeObject<CreateChangeRequestInput>(inputContent);
             var commSettings = GetCommSettings(arguments.CommParamsFile);
-            var buildLogic = new BuildLogic(arguments.CollectionUri, crInputs.TeamProjectName, _adoSettings, _tokenHandler, _vssConnectionFactory);
-            var workItemLogic = new WorkItemLogic(arguments.CollectionUri, crInputs.TeamProjectName, _adoSettings, _tokenHandler, _vssConnectionFactory);
-            var releaseLogic = new ReleaseLogic(arguments.CollectionUri, crInputs.TeamProjectName, _adoSettings, _tokenHandler);
+            var buildLogic = new BuildLogic(arguments.CollectionUri, crInputs.TeamProjectName, adoSettings, tokenHandler, vssConnectionFactory);
+            var workItemLogic = new WorkItemLogic(arguments.CollectionUri, crInputs.TeamProjectName, adoSettings, tokenHandler, vssConnectionFactory);
+            var releaseLogic = new ReleaseLogic(arguments.CollectionUri, crInputs.TeamProjectName, adoSettings, tokenHandler);
             var changeDescriptionGenerator = new ChangeDescriptionGenerator();
 
             var build = GetBuildForRelease(releaseLogic, buildLogic, arguments);
@@ -275,7 +271,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             Console.WriteLine($"Submitting CR: {JsonConvert.SerializeObject(changeRequest, Formatting.Indented)}");
             try
             {
-                var httpClient = new ServiceNowHttpClient(arguments.ServiceNowApi, _adoSettings.ServiceNowApiSubscriptionId, _tokenHandler.GetToken());
+                var httpClient = new ServiceNowHttpClient(arguments.ServiceNowApi, adoSettings.ServiceNowApiSubscriptionId, tokenHandler.GetToken());
                 var crNumber = httpClient.CreateCR(changeRequest);
 
                 return crNumber;
@@ -375,14 +371,14 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private void ValidateBranchUsedForBuild(CreateCrOptions crArguments, Build build, CreateChangeRequestInput crInputs, bool isProd)
         {
-            Dictionary<BranchingStrategies, List<string>> branches =
+            Dictionary<BranchingStrategies, string[]> branches =
             new()
             {
-                {BranchingStrategies.GitHubFlow, new List<string> {"project", "master", "feature", "bug", "release", "main"}},
-                {BranchingStrategies.GitFlow, new List<string> {"release", "master", "develop", "hotfix", "main"}}
+                {BranchingStrategies.GitHubFlow, new string[] {"project", "master", "feature", "bug", "release", "main"}},
+                {BranchingStrategies.GitFlow, new string[] {"release", "master", "develop", "hotfix", "main"}}
             };
 
-            if (!build.SourceBranch.ContainsAny([.. branches[crInputs.BranchingStrategy]]))
+            if (!build.SourceBranch.ContainsAny(branches[crInputs.BranchingStrategy]))
             {
                 if (isProd)
                     throw new ArgumentException(
