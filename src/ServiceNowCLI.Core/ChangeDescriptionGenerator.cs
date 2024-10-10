@@ -9,7 +9,7 @@ namespace ServiceNowCLI.Core
     {
         public List<string> GenerateChangeDescription(List<WorkItem> linkedWorkItems)
         {
-            Dictionary<string, bool> changeDescriptions = new Dictionary<string, bool>();
+            Dictionary<string, bool> changeDescriptions = [];
 
             foreach (var workItem in linkedWorkItems)
             {
@@ -17,10 +17,7 @@ namespace ServiceNowCLI.Core
                 var workItemTitle = workItem.Fields["System.Title"].ToString();
                 var changeDescription = $"{workItemType} {workItem.Id}: {workItemTitle}";
 
-                if (!changeDescriptions.ContainsKey(changeDescription))
-                {
-                    changeDescriptions.Add(changeDescription, true);
-                }
+                changeDescriptions.TryAdd(changeDescription, true);
             }
 
             if (changeDescriptions.Count == 0)
@@ -30,7 +27,7 @@ namespace ServiceNowCLI.Core
             }
 
             var sortedChangeDescriptions = changeDescriptions.Keys.OrderBy(key => key);
-            return sortedChangeDescriptions.ToList();
+            return [.. sortedChangeDescriptions];
         }
     }
 }

@@ -12,20 +12,15 @@ namespace ServiceNowCLI.Core
         {
             // dates should be in GMT, SM will shift to local
             var parser = new Chronic.Core.Parser();
-            var scheduledStartDate = parser.Parse(inputs.ScheduledStartDate);
-            if (scheduledStartDate == null)
-            {
-                throw new ArgumentException("Unable to parse the Scheduled Start Time, please use a known format from Chronic, https://github.com/robertwilczynski/nChronic");
-            }
+            var scheduledStartDate = parser.Parse(inputs.ScheduledStartDate) 
+                ?? throw new ArgumentException("Unable to parse the Scheduled Start Time, please use a known format from Chronic, https://github.com/robertwilczynski/nChronic");
+
             ScheduledStartDate = DateTime.UtcNow;
             if (scheduledStartDate.Start != null) 
                 ScheduledStartDate = ((DateTime) scheduledStartDate.Start).ToUniversalTime();
 
-            var scheduledEndDate = parser.Parse(inputs.ScheduledEndDate);
-            if (scheduledEndDate == null)
-            {
-                throw new ArgumentException("Unable to parse the Scheduled End Time, please use a known format from Chronic, https://github.com/robertwilczynski/nChronic");
-            }
+            var scheduledEndDate = parser.Parse(inputs.ScheduledEndDate) 
+                ?? throw new ArgumentException("Unable to parse the Scheduled End Time, please use a known format from Chronic, https://github.com/robertwilczynski/nChronic");
 
             ScheduledEndDate = DateTime.UtcNow;
             if (scheduledEndDate.Start != null)

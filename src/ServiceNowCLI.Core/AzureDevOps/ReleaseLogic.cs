@@ -9,24 +9,16 @@ using ServiceNowCLI.Config.Dtos;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class ReleaseLogic
+    public class ReleaseLogic(
+        string azureDevOpsServer,
+        string teamProjectName,
+        AzureDevOpsSettings adoSettings,
+        IAzureDevOpsTokenHandler tokenHandler)
     {
-        private readonly string _teamProjectName;
-        private readonly string _collectionUri;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler;
-        private readonly AzureDevOpsSettings _adoSettings;
-
-        public ReleaseLogic(
-            string azureDevOpsServer, 
-            string teamProjectName, 
-            AzureDevOpsSettings adoSettings, 
-            IAzureDevOpsTokenHandler tokenHandler)
-        {
-            _collectionUri = azureDevOpsServer;
-            _teamProjectName = teamProjectName;
-            _tokenHandler = tokenHandler;
-            _adoSettings = adoSettings;
-        }
+        private readonly string _teamProjectName = teamProjectName;
+        private readonly string _collectionUri = azureDevOpsServer;
+        private readonly IAzureDevOpsTokenHandler _tokenHandler = tokenHandler;
+        private readonly AzureDevOpsSettings _adoSettings = adoSettings;
 
         public void UpdateReleaseVariables(string releaseId, Dictionary<string, string> variableNamesAndValues)
         {

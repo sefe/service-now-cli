@@ -121,7 +121,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             var workItems = _buildsClient.GetBuildWorkItemsRefsAsync(build.Project.Id, build.Id).GetAwaiter().GetResult();
 
-            if (!workItems.Any())
+            if (workItems.Count == 0)
                 throw new ArgumentException(
                     "No Work Items could be found for release, please ensure that your build has linked work items!");
 

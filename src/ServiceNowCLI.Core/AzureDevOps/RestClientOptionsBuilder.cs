@@ -7,7 +7,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 {
     public static class RestClientOptionsBuilder
     {
-        private static int TimeoutSec = 60;
+        private static readonly int TimeoutSec = 60;
 
         public static RestClientOptions GetRestClientOptions(AzureDevOpsSettings adoSettings, string token, string clientUri)
         {
