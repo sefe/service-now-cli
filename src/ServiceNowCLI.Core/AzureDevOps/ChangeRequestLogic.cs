@@ -12,18 +12,11 @@ using System.Text;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class ChangeRequestLogic
+    public class ChangeRequestLogic(AzureDevOpsSettings adoSettings, IAzureDevOpsTokenHandler tokenHandler, IVssConnectionFactory vssConnectionFactory)
     {
-        private readonly AzureDevOpsSettings _adoSettings;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler;
-        private readonly IVssConnectionFactory _vssConnectionFactory;
-
-        public ChangeRequestLogic(AzureDevOpsSettings adoSettings, IAzureDevOpsTokenHandler tokenHandler, IVssConnectionFactory vssConnectionFactory)
-        {
-            _adoSettings = adoSettings;
-            _tokenHandler = tokenHandler;
-            _vssConnectionFactory = vssConnectionFactory;
-        }
+        private readonly AzureDevOpsSettings _adoSettings = adoSettings;
+        private readonly IAzureDevOpsTokenHandler _tokenHandler = tokenHandler;
+        private readonly IVssConnectionFactory _vssConnectionFactory = vssConnectionFactory;
 
         public void CreateChangeRequest(CreateCrOptions arguments)
         {
@@ -150,17 +143,13 @@ namespace ServiceNowCLI.Core.AzureDevOps
             
             var buildArgument = arguments.BuildNumber;
 
-            if (buildArgument.Contains(";"))
+            if (buildArgument.Contains(';'))
             {
-                throw new Exception($"BuildNumber in CLI arguments is [{arguments.BuildNumber}], which contains a semi-colon. Only single builds are supported");
+                throw new ArgumentException($"BuildNumber in CLI arguments is [{arguments.BuildNumber}], which contains a semi-colon. Only single builds are supported");
             }
 
-            var buildFromBuildNumberInArguments = buildLogic.GetBuildForBuildNumber(arguments.BuildNumber);
-
-            if (buildFromBuildNumberInArguments == null)
-            {
-                throw new Exception($"Unable to get build definition for build number {arguments.BuildNumber} specified in CLI tool arguments");
-            }
+            var buildFromBuildNumberInArguments = buildLogic.GetBuildForBuildNumber(arguments.BuildNumber) 
+                ?? throw new ArgumentException($"Unable to get build definition for build number {arguments.BuildNumber} specified in CLI tool arguments");
 
             return buildFromBuildNumberInArguments;
         }
@@ -387,14 +376,13 @@ namespace ServiceNowCLI.Core.AzureDevOps
         private void ValidateBranchUsedForBuild(CreateCrOptions crArguments, Build build, CreateChangeRequestInput crInputs, bool isProd)
         {
             Dictionary<BranchingStrategies, List<string>> branches =
-
-            new Dictionary<BranchingStrategies, List<string>>
+            new()
             {
                 {BranchingStrategies.GitHubFlow, new List<string> {"project", "master", "feature", "bug", "release", "main"}},
                 {BranchingStrategies.GitFlow, new List<string> {"release", "master", "develop", "hotfix", "main"}}
             };
 
-            if (!build.SourceBranch.ContainsAny(branches[crInputs.BranchingStrategy].ToArray()))
+            if (!build.SourceBranch.ContainsAny([.. branches[crInputs.BranchingStrategy]]))
             {
                 if (isProd)
                     throw new ArgumentException(

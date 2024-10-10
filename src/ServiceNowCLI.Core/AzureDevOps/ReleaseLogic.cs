@@ -2,30 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
 using Newtonsoft.Json;
 using RestSharp;
 using ServiceNowCLI.Config.Dtos;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class ReleaseLogic
+    public class ReleaseLogic(
+        string azureDevOpsServer,
+        string teamProjectName,
+        AzureDevOpsSettings adoSettings,
+        IAzureDevOpsTokenHandler tokenHandler)
     {
-        private readonly string _teamProjectName;
-        private readonly string _collectionUri;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler;
-        private readonly AzureDevOpsSettings _adoSettings;
-
-        public ReleaseLogic(
-            string azureDevOpsServer, 
-            string teamProjectName, 
-            AzureDevOpsSettings adoSettings, 
-            IAzureDevOpsTokenHandler tokenHandler)
-        {
-            _collectionUri = azureDevOpsServer;
-            _teamProjectName = teamProjectName;
-            _tokenHandler = tokenHandler;
-            _adoSettings = adoSettings;
-        }
+        private readonly string _teamProjectName = teamProjectName;
+        private readonly string _collectionUri = azureDevOpsServer;
+        private readonly IAzureDevOpsTokenHandler _tokenHandler = tokenHandler;
+        private readonly AzureDevOpsSettings _adoSettings = adoSettings;
 
         public void UpdateReleaseVariables(string releaseId, Dictionary<string, string> variableNamesAndValues)
         {
@@ -47,7 +40,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             if (!putResponse.IsSuccessful)
             {
-                throw new Exception(putResponse.ErrorMessage);
+                throw new ArgumentException(putResponse.ErrorMessage);
             }
 
             Console.WriteLine("Release published back to Azure DevOps successfully");
@@ -88,12 +81,12 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 return string.Empty;
             }
 
-            if (!buildArtifact.DefinitionReference.ContainsKey(buildUriName))
+            if (!buildArtifact.DefinitionReference.TryGetValue(buildUriName, out ArtifactSourceReference value))
             {
                 return string.Empty;
             }
 
-            var buildUri = buildArtifact.DefinitionReference[buildUriName];
+            var buildUri = value;
 
             var buildId = buildUri.Id.Split('/').Last();
 
@@ -109,7 +102,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             if (!getResponse.IsSuccessful)
             {
-                throw new Exception(getResponse.ErrorMessage);
+                throw new ArgumentException(getResponse.ErrorMessage);
             }
 
             var release = JsonConvert.DeserializeObject<Release>(getResponse.Content);
@@ -118,7 +111,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private void UpsertReleaseVariableValue(Release release, string variableName, string variableValue)
         {
-            if (!release.Variables.ContainsKey(variableName))
+            if (!release.Variables.TryGetValue(variableName, out ConfigurationVariableValue value))
             {
                 var newVariableValue = new ConfigurationVariableValue
                 {
@@ -131,7 +124,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             }
             else
             {
-                var variableToUpdate = release.Variables[variableName];
+                var variableToUpdate = value;
                 variableToUpdate.Value = variableValue;
                 Console.WriteLine($"Updating variable in release, VariableName={variableName}, VariableValue={variableValue}");
             }

@@ -12,10 +12,7 @@ namespace ServiceNowCLI.Core.Extensions
         public static T ToEnum<T>(this string value, bool ignoreCase = true)
             where T : Enum
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             return (T)Enum.Parse(typeof(T), value, ignoreCase);
         }

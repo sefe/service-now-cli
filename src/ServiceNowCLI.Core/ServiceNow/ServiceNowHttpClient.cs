@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Services.Common.CommandLine;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.VisualStudio.Services.Common.CommandLine;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
@@ -17,6 +18,7 @@ namespace ServiceNowCLI.Core.ServiceNow
 
         private readonly Dictionary<CrTypes, SnConfiguration> configurations;
         readonly RestClient _client;
+        private bool disposedValue;
 
         public ServiceNowHttpClient(string serviceNowUri, string subscriptionId, string bearerToken)
         {
@@ -52,7 +54,7 @@ namespace ServiceNowCLI.Core.ServiceNow
                 return res.result.number;
             }
 
-            throw new ApplicationException($"CR creation failed with code {response.StatusCode}, content: {response.Content}");
+            throw new BadHttpRequestException($"CR creation failed with code {response.StatusCode}, content: {response.Content}");
         }
 
         private void UpdateCRStateFromTo(string sys_id, CrTypes type, CrStates fromState, CrStates toState)
@@ -169,9 +171,22 @@ namespace ServiceNowCLI.Core.ServiceNow
             });
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _client?.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
         public void Dispose()
         {
-            _client?.Dispose();
+            Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }

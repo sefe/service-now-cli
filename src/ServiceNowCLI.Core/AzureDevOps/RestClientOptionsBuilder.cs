@@ -5,13 +5,13 @@ using ServiceNowCLI.Config.Dtos;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class RestClientOptionsBuilder
+    public static class RestClientOptionsBuilder
     {
-        public static int TimeoutSec = 60;
+        private static readonly int TimeoutSec = 60;
 
         public static RestClientOptions GetRestClientOptions(AzureDevOpsSettings adoSettings, string token, string clientUri)
         {
-            if (clientUri.ToLowerInvariant().Contains(adoSettings.CollectionUrlCloudIndicator.ToLowerInvariant()))
+            if (clientUri.Contains(adoSettings.CollectionUrlCloudIndicator, StringComparison.InvariantCultureIgnoreCase))
             {
                 Console.WriteLine($"Creating RestClientOptions using OAuth2Authorization for Uri={clientUri}");
                 return new RestClientOptions(clientUri)

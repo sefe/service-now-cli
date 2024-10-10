@@ -9,7 +9,7 @@ namespace ServiceNowCLI.Core
     {
         public List<string> GenerateChangeDescription(List<WorkItem> linkedWorkItems)
         {
-            Dictionary<string, bool> changeDescriptions = new Dictionary<string, bool>();
+            Dictionary<string, bool> changeDescriptions = [];
 
             foreach (var workItem in linkedWorkItems)
             {
@@ -17,20 +17,17 @@ namespace ServiceNowCLI.Core
                 var workItemTitle = workItem.Fields["System.Title"].ToString();
                 var changeDescription = $"{workItemType} {workItem.Id}: {workItemTitle}";
 
-                if (!changeDescriptions.Keys.Contains(changeDescription))
-                {
-                    changeDescriptions.Add(changeDescription, true);
-                }
+                changeDescriptions.TryAdd(changeDescription, true);
             }
 
-            if (!changeDescriptions.Any())
+            if (changeDescriptions.Count == 0)
             {
                 throw new ArgumentException(
                     "No linked PBI's have been found on this build to be able to attach to CR!");
             }
 
             var sortedChangeDescriptions = changeDescriptions.Keys.OrderBy(key => key);
-            return sortedChangeDescriptions.ToList();
+            return [.. sortedChangeDescriptions];
         }
     }
 }

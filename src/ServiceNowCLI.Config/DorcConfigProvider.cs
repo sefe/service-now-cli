@@ -10,16 +10,10 @@ namespace ServiceNowCLI.Config
         string GetDorcPropertyValue(string dorcPropertyName);
     }
 
-    public class DorcConfigProvider : IDorcConfigProvider
+    public class DorcConfigProvider(string dorcApiBaseUrl, string dorcEnvironment) : IDorcConfigProvider
     {
-        private readonly string _dorcApiBaseUrl;
-        private readonly string _dorcEnvironment;
-
-        public DorcConfigProvider(string dorcApiBaseUrl, string dorcEnvironment)
-        {
-            _dorcApiBaseUrl = dorcApiBaseUrl;
-            _dorcEnvironment = dorcEnvironment;
-        }
+        private readonly string _dorcApiBaseUrl = dorcApiBaseUrl;
+        private readonly string _dorcEnvironment = dorcEnvironment;
 
         public string GetDorcPropertyValue(string dorcPropertyName)
         {
