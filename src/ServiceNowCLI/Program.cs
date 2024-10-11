@@ -77,7 +77,7 @@ namespace ServiceNowCLI
             return settings;
         }
 
-        private static ServiceNowSettings GetServiceNowSettings(OptionsBase opts)
+        private static ServiceNowSettings GetServiceNowSettings()
         {
             return new ServiceNowSettings()
             {
@@ -110,7 +110,7 @@ namespace ServiceNowCLI
             ActivityFailedOptions opts)
         {
             var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings(opts);
+            var snSettings = GetServiceNowSettings();
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             return crLogic.CompleteActivity(opts, false);
@@ -120,7 +120,7 @@ namespace ServiceNowCLI
             ActivitySuccessOptions opts)
         {
             var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings(opts);
+            var snSettings = GetServiceNowSettings();
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             return crLogic.CompleteActivity(opts, true);
@@ -130,7 +130,7 @@ namespace ServiceNowCLI
             CreateCrOptions arguments)
         {
             var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings(arguments);
+            var snSettings = GetServiceNowSettings();
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             arguments.ExistingCr = arguments.ExistingCr.Replace("'", string.Empty);
@@ -157,7 +157,7 @@ namespace ServiceNowCLI
         private static object RunCancelChangeRequestNum(CancelCrsOptions opts)
         {
             var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings(opts);
+            var snSettings = GetServiceNowSettings();
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             crLogic.CancelCrs(opts);
