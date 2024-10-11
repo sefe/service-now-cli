@@ -65,20 +65,14 @@ namespace ServiceNowCLI
             Console.WriteLine($"Finished - time taken = {activity.Duration:g}");
         }
 
-        private static AzureDevOpsSettings GetAzureDevOpsSettings(string collectionUrl)
+        private static AzureDevOpsSettings GetAzureDevOpsSettings()
         {
             var dorcApiBaseUrl = ConfigurationManager.AppSettings["DorcApiBaseUrl"];
             var dorcEnvironment = ConfigurationManager.AppSettings["DorcEnvironment"];
             var dorcConfigProvider = new DorcConfigProvider(dorcApiBaseUrl, dorcEnvironment);
             var azureDevOpsSettingsBuilder = new AzureDevOpsSettingsBuilder(dorcConfigProvider);
 
-            bool useDefaultCreds = false;
-            if (!string.IsNullOrEmpty(collectionUrl))
-            {
-                useDefaultCreds = !collectionUrl.Contains(ConfigurationManager.AppSettings["AdoCollectionUrlCloudIndicator"], StringComparison.OrdinalIgnoreCase);
-            }
-
-            var settings = azureDevOpsSettingsBuilder.GetSettings(useDefaultCreds);
+            var settings = azureDevOpsSettingsBuilder.GetSettings();
 
             return settings;
         }
@@ -103,9 +97,9 @@ namespace ServiceNowCLI
             (AzureDevOpsSettings adoSettings, 
             AzureDevOpsTokenHandler tokenHandler, 
             VssConnectionFactory vssConnectionFactory)
-            GetAdoObjects(AdoUriOption opts)
+            GetAdoObjects()
         {
-            var adoSettings = GetAzureDevOpsSettings(opts.CollectionUri);
+            var adoSettings = GetAzureDevOpsSettings();
             var tokenHandler = new AzureDevOpsTokenHandler(adoSettings);
             var vssConnectionFactory = new VssConnectionFactory(tokenHandler);
 
@@ -115,7 +109,7 @@ namespace ServiceNowCLI
         private static object RunActivityFailedAndReturnExitCode(
             ActivityFailedOptions opts)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(opts);
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
             var snSettings = GetServiceNowSettings(opts);
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
@@ -125,7 +119,7 @@ namespace ServiceNowCLI
         private static object RunActivitySuccessAndReturnExitCode(
             ActivitySuccessOptions opts)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(opts);
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
             var snSettings = GetServiceNowSettings(opts);
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
@@ -135,7 +129,7 @@ namespace ServiceNowCLI
         public static object RunCreateChangeRequestAndReturnExitCode(
             CreateCrOptions arguments)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(arguments);
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
             var snSettings = GetServiceNowSettings(arguments);
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
@@ -147,7 +141,7 @@ namespace ServiceNowCLI
         public static object RunSetReleasePipelineVariableValueAndReturnExitCode(
             SetReleaseVariableOptions arguments)
         {
-            var (adoSettings, tokenHandler, _) = GetAdoObjects(arguments);
+            var (adoSettings, tokenHandler, _) = GetAdoObjects();
             var releaseLogic = new ReleaseLogic(arguments.TeamProjectName, adoSettings, tokenHandler);
 
             var variableNamesAndValues = new Dictionary<string, string>
@@ -162,7 +156,7 @@ namespace ServiceNowCLI
 
         private static object RunCancelChangeRequestNum(CancelCrsOptions opts)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(opts);
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
             var snSettings = GetServiceNowSettings(opts);
 
             var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
