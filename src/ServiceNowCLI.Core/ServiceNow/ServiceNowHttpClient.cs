@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.VisualStudio.Services.Common.CommandLine;
+﻿using Microsoft.VisualStudio.Services.Common.CommandLine;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
 using RestSharp.Serializers.Json;
+using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Extensions;
 using System;
 using System.Collections.Generic;
@@ -16,13 +16,13 @@ namespace ServiceNowCLI.Core.ServiceNow
     {
         private const string crUri = "/change_request";
 
-        private readonly Dictionary<CrTypes, SnConfiguration> configurations;
+        private readonly Dictionary<CrTypes, CrFlowConfiguration> configurations;
         readonly RestClient _client;
         private bool disposedValue;
 
-        public ServiceNowHttpClient(string serviceNowUri, string subscriptionId, string bearerToken)
+        public ServiceNowHttpClient(ServiceNowSettings settings, string bearerToken)
         {
-            var options = new RestClientOptions(serviceNowUri)
+            var options = new RestClientOptions(settings.ApiUrl)
             {
                 Authenticator = new JwtAuthenticator(bearerToken),
             };
@@ -32,9 +32,9 @@ namespace ServiceNowCLI.Core.ServiceNow
                 {
                     s.UseSystemTextJson(new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
                 });
-            _client.AddDefaultHeader("ocp-apim-subscription-key", subscriptionId);
 
-            configurations = SnConfiguration.GetDefault();
+            _client.AddDefaultHeader(settings.SubscriptionHeaderName, settings.SubscriptionHeaderValue);
+            configurations = CrFlowConfiguration.GetDefault();
         }
 
         public string CreateCR(ISnCreateChangeRequestModel cr)
@@ -54,7 +54,7 @@ namespace ServiceNowCLI.Core.ServiceNow
                 return res.result.number;
             }
 
-            throw new BadHttpRequestException($"CR creation failed with code {response.StatusCode}, content: {response.Content}");
+            throw new ArgumentException($"CR creation failed with code {response.StatusCode}, content: {response.Content}");
         }
 
         private void UpdateCRStateFromTo(string sys_id, CrTypes type, CrStates fromState, CrStates toState)
@@ -77,6 +77,11 @@ namespace ServiceNowCLI.Core.ServiceNow
             {
                 var crType = cr.type.ToEnum<CrTypes>();
                 var crState = cr.state.ToEnum<CrStates>(); 
+                if (crState == CrStates.Closed)
+                {
+                    Console.WriteLine($"CR {number} is already closed");
+                    return true;
+                }
                 var preCloseState = configurations[crType].CrWorkflow.Find(CrStates.Closed).Previous.Value;
                 UpdateCRStateFromTo(cr.sys_id, crType, crState, preCloseState);
                 return SetCrStateClosed(cr.sys_id, successfully ? CrCloseCodes.successful : CrCloseCodes.unsuccessful, configurations[crType].ClosedStateParams);
@@ -167,7 +172,7 @@ namespace ServiceNowCLI.Core.ServiceNow
             {
                 close_code = close_code.ToString(),
                 close_notes = closeParams[CloseFields.CloseNotes],
-                reason = closeParams[CloseFields.Reason]
+                reason = closeParams.GetValueOrDefault(CloseFields.Reason) ?? ""
             });
         }
 

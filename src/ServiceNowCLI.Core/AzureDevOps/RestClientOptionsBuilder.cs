@@ -11,7 +11,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         public static RestClientOptions GetRestClientOptions(AzureDevOpsSettings adoSettings, string token, string clientUri)
         {
-            if (clientUri.Contains(adoSettings.CollectionUrlCloudIndicator, StringComparison.InvariantCultureIgnoreCase))
+            if (!adoSettings.UseDefaultCredentials)
             {
                 Console.WriteLine($"Creating RestClientOptions using OAuth2Authorization for Uri={clientUri}");
                 return new RestClientOptions(clientUri)

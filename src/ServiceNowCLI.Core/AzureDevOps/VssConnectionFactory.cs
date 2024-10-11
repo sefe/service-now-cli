@@ -1,40 +1,37 @@
-﻿using System;
-using Microsoft.VisualStudio.Services.Client;
+﻿using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using ServiceNowCLI.Config.Dtos;
-using ServiceNowCLI.Core.Extensions;
+using System;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
     public interface IVssConnectionFactory
     {
-        VssConnection CreateVssConnection(string collectionUri);
+        VssConnection CreateVssConnection(AzureDevOpsSettings adoSettings);
     }
 
     public class VssConnectionFactory : IVssConnectionFactory
     {
-        private readonly AzureDevOpsSettings _adoSettings;
         private readonly IAzureDevOpsTokenHandler _tokenHandler;
 
-        public VssConnectionFactory(AzureDevOpsSettings adoSettings, IAzureDevOpsTokenHandler tokenHandler)
+        public VssConnectionFactory(IAzureDevOpsTokenHandler tokenHandler)
         {
-            _adoSettings = adoSettings;
             _tokenHandler = tokenHandler;
         }
 
-        public VssConnection CreateVssConnection(string collectionUri)
+        public VssConnection CreateVssConnection(AzureDevOpsSettings adoSettings)
         {
-            if (collectionUri.Contains(_adoSettings.CollectionUrlCloudIndicator, StringComparison.OrdinalIgnoreCase))
+            if (!adoSettings.UseDefaultCredentials)
             {
-                return CreateCloudVssConnection();
+                return CreateCloudVssConnection(adoSettings);
             }
 
             Console.WriteLine($"Creating VssConnection for on-prem AzureDevOps");
-            return new VssConnection(new Uri(collectionUri), new VssCredentials());
+            return new VssConnection(new Uri(adoSettings.OrganizationUrl), new VssCredentials());
         }
 
-        public VssConnection CreateCloudVssConnection()
+        private VssConnection CreateCloudVssConnection(AzureDevOpsSettings adoSettings)
         {
             Console.WriteLine($"Creating VssConnection for cloud AzureDevOps");
 
@@ -44,7 +41,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             var settings = VssClientHttpRequestSettings.Default.Clone();
 
-            var organizationUri = new Uri(_adoSettings.OrganizationUrl);
+            var organizationUri = new Uri(adoSettings.OrganizationUrl);
 
             return new VssConnection(organizationUri, credentials, settings);
         }

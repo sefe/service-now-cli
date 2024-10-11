@@ -2,17 +2,8 @@
 
 namespace ServiceNowCLI.Core.Arguments
 {
-    public class OptionsBase
-    {
-        [Option('s', "servicenowapi", Required = true, HelpText = "The endpoint for the Service Now API to use for interacting with Service Manager")]
-        public string ServiceNowApi { get; set; }
-
-        [Option('c', "collectionuri", Required = true, HelpText = "The Azure DevOps Collection URI to use when interacting with Azure DevOps Server")]
-        public string CollectionUri { get; set; }
-    }
-    
     [Verb("createcr", HelpText = "Add file contents to the index.")]
-    public class CreateCrOptions : OptionsBase
+    public class CreateCrOptions
     {
         [Option('b', "buildnumber", Required = true, HelpText = "Azure DevOps Build Number to attach to the Change Request.")]
         public string BuildNumber { get; set; }
@@ -44,7 +35,7 @@ namespace ServiceNowCLI.Core.Arguments
         public bool IncludeAllLinkedWorkItems => WorkItemLinking == "All";
     }
 
-    public class SetActivityOptions : OptionsBase
+    public class SetActivityOptions
     {
         [Option('a', "activitytitle", Required = false, HelpText = "Activity in Change Request to update.")]
         public string Activity { get; set; }
@@ -66,7 +57,7 @@ namespace ServiceNowCLI.Core.Arguments
     }
 
     [Verb("cancelcrs", HelpText = "Cancel CR or the list of CRs.")]
-    public class CancelCrsOptions : OptionsBase
+    public class CancelCrsOptions
     {
         [Option('r', "changenumbers", Required = false, HelpText = "Comma separated list of Change Request Numbers to Cancel.")]
         public string ChangeNums { get; set; }
@@ -75,9 +66,6 @@ namespace ServiceNowCLI.Core.Arguments
     [Verb("setreleasevariable", HelpText = "Set variable value within a release pipeline.")]
     public class SetReleaseVariableOptions
     {
-        [Option('c', "collectionuri", Required = true, HelpText = "The Azure DevOps Collection URI to use when interacting with Azure DevOps Server")]
-        public string CollectionUri { get; set; }
-
         [Option('i', "releaseid", Required = true, HelpText = "Azure DevOps Release ID.")]
         public string ReleaseId { get; set; }
 
