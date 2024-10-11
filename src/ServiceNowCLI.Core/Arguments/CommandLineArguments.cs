@@ -4,7 +4,7 @@ namespace ServiceNowCLI.Core.Arguments
 {
     public class AdoUriOption
     {
-        [Option('c', "collectionuri", Required = true, HelpText = "The Azure DevOps Collection URI to use when interacting with Azure DevOps Server")]
+        [Option('c', "collectionuri", Required = false, HelpText = "The Azure DevOps Collection URI to use when interacting with Azure DevOps Server")]
         public string CollectionUri { get; set; }
     }
 

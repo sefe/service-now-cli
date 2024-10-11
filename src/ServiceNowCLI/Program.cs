@@ -72,7 +72,12 @@ namespace ServiceNowCLI
             var dorcConfigProvider = new DorcConfigProvider(dorcApiBaseUrl, dorcEnvironment);
             var azureDevOpsSettingsBuilder = new AzureDevOpsSettingsBuilder(dorcConfigProvider);
 
-            var useDefaultCreds = !collectionUrl.Contains(ConfigurationManager.AppSettings["AdoCollectionUrlCloudIndicator"], StringComparison.OrdinalIgnoreCase);
+            bool useDefaultCreds = false;
+            if (!string.IsNullOrEmpty(collectionUrl))
+            {
+                useDefaultCreds = !collectionUrl.Contains(ConfigurationManager.AppSettings["AdoCollectionUrlCloudIndicator"], StringComparison.OrdinalIgnoreCase);
+            }
+
             var settings = azureDevOpsSettingsBuilder.GetSettings(useDefaultCreds);
 
             return settings;
