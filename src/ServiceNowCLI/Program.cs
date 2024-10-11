@@ -81,9 +81,9 @@ namespace ServiceNowCLI
         {
             return new ServiceNowSettings()
             {
-                ApiUrl = opts.ServiceNowApi,
-                SubscriptionHeaderName = "ocp-apim-subscription-key",
-                SubscriptionHeaderValue = ConfigurationManager.AppSettings["serviceNowApiSubscriptionId"]
+                ApiUrl = ConfigurationManager.AppSettings["ServiceNowApiUrl"],
+                SubscriptionHeaderName = "subscription-key",
+                SubscriptionHeaderValue = ConfigurationManager.AppSettings["ServiceNowApiSubscriptionKey"]
             };
         }
 
