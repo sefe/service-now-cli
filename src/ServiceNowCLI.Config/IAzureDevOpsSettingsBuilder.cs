@@ -4,6 +4,6 @@ namespace ServiceNowCLI.Config
 {
     public interface IAzureDevOpsSettingsBuilder
     {
-        AzureDevOpsSettings GetSettings();
+        AzureDevOpsSettings GetSettings(bool useDefaultCredentials);
     }
 }

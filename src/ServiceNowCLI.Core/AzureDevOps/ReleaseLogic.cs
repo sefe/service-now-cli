@@ -1,20 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
+﻿using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
 using Newtonsoft.Json;
 using RestSharp;
 using ServiceNowCLI.Config.Dtos;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class ReleaseLogic(
-        string azureDevOpsServer,
-        string teamProjectName,
-        AzureDevOpsSettings adoSettings,
-        IAzureDevOpsTokenHandler tokenHandler)
+    public class ReleaseLogic : BaseLogic
     {
+        private readonly string teamProjectName;
+
+        public ReleaseLogic(
+            string teamProjectName,
+            AzureDevOpsSettings adoSettings,
+            IAzureDevOpsTokenHandler tokenHandler): base(adoSettings, tokenHandler)
+        {
+            this.teamProjectName = teamProjectName;
+        }
+
         public void UpdateReleaseVariables(string releaseId, Dictionary<string, string> variableNamesAndValues)
         {
             var releaseClient = GetReleaseClient(releaseId);
@@ -51,10 +57,10 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private RestClient GetReleaseClient(string releaseId)
         {
-            var clientUri = AzureDevOpsApiUriBuilder.GetUriForReleaseId(azureDevOpsServer, teamProjectName, releaseId);
-            var accessToken = tokenHandler.GetToken();
-            var options = RestClientOptionsBuilder.GetRestClientOptions(adoSettings, accessToken, clientUri);
-            return new RestClient(options);
+            var releaseLocationUrl = GetResourceLocationUrl(AdoResources.release);
+            var clientUri = AzureDevOpsApiUriBuilder.GetUriForReleaseId(releaseLocationUrl, teamProjectName, releaseId);
+            
+            return GetClient(clientUri);
         }
 
         public Release GetRelease(string releaseId)

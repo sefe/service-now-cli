@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using CommandLine;
+using Microsoft.VisualStudio.Services.Common.CommandLine;
 using Newtonsoft.Json;
 using ServiceNowCLI.Config;
 using ServiceNowCLI.Config.Dtos;
@@ -50,17 +51,13 @@ namespace ServiceNowCLI
 
             Console.WriteLine($"Starting ServiceNowCLI - command line arguments: {JsonConvert.SerializeObject(args)}");
 
-            var adoSettings = GetAzureDevOpsSettings();
-            var tokenHandler = new AzureDevOpsTokenHandler(adoSettings);
-            var vssConnectionFactory = new VssConnectionFactory(adoSettings, tokenHandler);
-
             Parser.Default.ParseArguments<CreateCrOptions, ActivitySuccessOptions, ActivityFailedOptions, SetReleaseVariableOptions, CancelCrsOptions>(args)
                 .MapResult(
-                    (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts, adoSettings, tokenHandler, vssConnectionFactory),
-                    (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts, adoSettings, tokenHandler, vssConnectionFactory),
-                    (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts, adoSettings, tokenHandler, vssConnectionFactory),
-                    (SetReleaseVariableOptions opts) => RunSetReleasePipelineVariableValueAndReturnExitCode(opts, adoSettings, tokenHandler),
-                    (CancelCrsOptions opts) => RunCancelChangeRequestNum(opts, adoSettings, tokenHandler, vssConnectionFactory),
+                    (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts),
+                    (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts),
+                    (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts),
+                    (SetReleaseVariableOptions opts) => RunSetReleasePipelineVariableValueAndReturnExitCode(opts),
+                    (CancelCrsOptions opts) => RunCancelChangeRequestNum(opts),
                     errs => HandleArgumentParsingError(errs));
 
             activity.Stop();
@@ -68,16 +65,27 @@ namespace ServiceNowCLI
             Console.WriteLine($"Finished - time taken = {activity.Duration:g}");
         }
 
-        private static AzureDevOpsSettings GetAzureDevOpsSettings()
+        private static AzureDevOpsSettings GetAzureDevOpsSettings(string collectionUrl)
         {
             var dorcApiBaseUrl = ConfigurationManager.AppSettings["DorcApiBaseUrl"];
             var dorcEnvironment = ConfigurationManager.AppSettings["DorcEnvironment"];
             var dorcConfigProvider = new DorcConfigProvider(dorcApiBaseUrl, dorcEnvironment);
             var azureDevOpsSettingsBuilder = new AzureDevOpsSettingsBuilder(dorcConfigProvider);
 
-            var settings = azureDevOpsSettingsBuilder.GetSettings();
+            var useDefaultCreds = !collectionUrl.Contains(ConfigurationManager.AppSettings["AdoCollectionUrlCloudIndicator"], StringComparison.OrdinalIgnoreCase);
+            var settings = azureDevOpsSettingsBuilder.GetSettings(useDefaultCreds);
 
             return settings;
+        }
+
+        private static ServiceNowSettings GetServiceNowSettings(OptionsBase opts)
+        {
+            return new ServiceNowSettings()
+            {
+                ApiUrl = opts.ServiceNowApi,
+                SubscriptionHeaderName = "ocp-apim-subscription-key",
+                SubscriptionHeaderValue = ConfigurationManager.AppSettings["serviceNowApiSubscriptionId"]
+            };
         }
 
         private static int HandleArgumentParsingError(IEnumerable<Error> errors)
@@ -86,44 +94,56 @@ namespace ServiceNowCLI
             throw new ArgumentException("Failed to parse command line arguments");
         }
 
-        private static object RunActivityFailedAndReturnExitCode(
-            ActivityFailedOptions opts, 
-            AzureDevOpsSettings adoSettings, 
-            IAzureDevOpsTokenHandler tokenHandler,
+        private static 
+            (AzureDevOpsSettings adoSettings, 
+            AzureDevOpsTokenHandler tokenHandler, 
             VssConnectionFactory vssConnectionFactory)
+            GetAdoObjects(AdoUriOption opts)
         {
-            var crLogic = new ChangeRequestLogic(adoSettings, tokenHandler, vssConnectionFactory);
+            var adoSettings = GetAzureDevOpsSettings(opts.CollectionUri);
+            var tokenHandler = new AzureDevOpsTokenHandler(adoSettings);
+            var vssConnectionFactory = new VssConnectionFactory(tokenHandler);
+
+            return (adoSettings, tokenHandler, vssConnectionFactory);
+        }
+
+        private static object RunActivityFailedAndReturnExitCode(
+            ActivityFailedOptions opts)
+        {
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(opts);
+            var snSettings = GetServiceNowSettings(opts);
+
+            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             return crLogic.CompleteActivity(opts, false);
         }
 
         private static object RunActivitySuccessAndReturnExitCode(
-            ActivitySuccessOptions opts, 
-            AzureDevOpsSettings adoSettings, 
-            IAzureDevOpsTokenHandler tokenHandler,
-            VssConnectionFactory vssConnectionFactory)
+            ActivitySuccessOptions opts)
         {
-            var crLogic = new ChangeRequestLogic(adoSettings, tokenHandler, vssConnectionFactory);
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(opts);
+            var snSettings = GetServiceNowSettings(opts);
+
+            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             return crLogic.CompleteActivity(opts, true);
         }
 
         public static object RunCreateChangeRequestAndReturnExitCode(
-            CreateCrOptions arguments, 
-            AzureDevOpsSettings adoSettings, 
-            IAzureDevOpsTokenHandler tokenHandler,
-            VssConnectionFactory vssConnectionFactory)
+            CreateCrOptions arguments)
         {
-            var crLogic = new ChangeRequestLogic(adoSettings, tokenHandler, vssConnectionFactory);
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(arguments);
+            var snSettings = GetServiceNowSettings(arguments);
+
+            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             arguments.ExistingCr = arguments.ExistingCr.Replace("'", string.Empty);
             crLogic.CreateChangeRequest(arguments);
             return 0;
         }
 
         public static object RunSetReleasePipelineVariableValueAndReturnExitCode(
-            SetReleaseVariableOptions arguments, 
-            AzureDevOpsSettings adoSettings, 
-            IAzureDevOpsTokenHandler tokenHandler)
+            SetReleaseVariableOptions arguments)
         {
-            var releaseLogic = new ReleaseLogic(arguments.CollectionUri, arguments.TeamProjectName, adoSettings, tokenHandler);
+            var (adoSettings, tokenHandler, _) = GetAdoObjects(arguments);
+            var releaseLogic = new ReleaseLogic(arguments.TeamProjectName, adoSettings, tokenHandler);
 
             var variableNamesAndValues = new Dictionary<string, string>
             {
@@ -135,9 +155,12 @@ namespace ServiceNowCLI
             return 0;
         }
 
-        private static object RunCancelChangeRequestNum(CancelCrsOptions opts, AzureDevOpsSettings adoSettings, AzureDevOpsTokenHandler tokenHandler, VssConnectionFactory vssConnectionFactory)
+        private static object RunCancelChangeRequestNum(CancelCrsOptions opts)
         {
-            var crLogic = new ChangeRequestLogic(adoSettings, tokenHandler, vssConnectionFactory);
+            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects(opts);
+            var snSettings = GetServiceNowSettings(opts);
+
+            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             crLogic.CancelCrs(opts);
 
             return 0;

@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
 using RestSharp.Serializers.Json;
+using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Extensions;
 using System;
 using System.Collections.Generic;
@@ -16,13 +17,13 @@ namespace ServiceNowCLI.Core.ServiceNow
     {
         private const string crUri = "/change_request";
 
-        private readonly Dictionary<CrTypes, SnConfiguration> configurations;
+        private readonly Dictionary<CrTypes, CrFlowConfiguration> configurations;
         readonly RestClient _client;
         private bool disposedValue;
 
-        public ServiceNowHttpClient(string serviceNowUri, string subscriptionId, string bearerToken)
+        public ServiceNowHttpClient(ServiceNowSettings settings, string bearerToken)
         {
-            var options = new RestClientOptions(serviceNowUri)
+            var options = new RestClientOptions(settings.ApiUrl)
             {
                 Authenticator = new JwtAuthenticator(bearerToken),
             };
@@ -32,9 +33,9 @@ namespace ServiceNowCLI.Core.ServiceNow
                 {
                     s.UseSystemTextJson(new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
                 });
-            _client.AddDefaultHeader("ocp-apim-subscription-key", subscriptionId);
 
-            configurations = SnConfiguration.GetDefault();
+            _client.AddDefaultHeader(settings.SubscriptionHeaderName, settings.SubscriptionHeaderValue);
+            configurations = CrFlowConfiguration.GetDefault();
         }
 
         public string CreateCR(ISnCreateChangeRequestModel cr)
@@ -167,7 +168,7 @@ namespace ServiceNowCLI.Core.ServiceNow
             {
                 close_code = close_code.ToString(),
                 close_notes = closeParams[CloseFields.CloseNotes],
-                reason = closeParams[CloseFields.Reason]
+                reason = closeParams.GetValueOrDefault(CloseFields.Reason) ?? ""
             });
         }
 

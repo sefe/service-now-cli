@@ -1,44 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.TeamFoundation.Build.WebApi;
+﻿using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi;
 using RestSharp;
 using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Arguments;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class WorkItemLogic
+    public class WorkItemLogic : BaseLogic
     {
         private readonly WorkItemTrackingHttpClient _workItemTrackingHttpClient;
-        private readonly string _teamProjectName;
-        private readonly string _collectionUri;
-        private readonly AzureDevOpsSettings _adoSettings;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler;
+        private readonly string teamProjectName;
+        private readonly VssConnection vssConnection;
 
         public WorkItemLogic(
-            string azureDevOpsServer, 
-            string teamProjectName, 
-            AzureDevOpsSettings adoSettings, 
-            IAzureDevOpsTokenHandler tokenHandler, 
-            IVssConnectionFactory vssConnectionFactory)
+            string teamProjectName,
+            AzureDevOpsSettings adoSettings,
+            IAzureDevOpsTokenHandler tokenHandler,
+            VssConnection vssConnection) : base(adoSettings, tokenHandler)
         {
-            _collectionUri = azureDevOpsServer;
-            _teamProjectName = teamProjectName;
-            _adoSettings = adoSettings;
-            _tokenHandler = tokenHandler;
+            this.teamProjectName = teamProjectName;
+            this.vssConnection = vssConnection;
 
-            var vssConnection = vssConnectionFactory.CreateVssConnection(_collectionUri);
             _workItemTrackingHttpClient = vssConnection.GetClient<WorkItemTrackingHttpClient>();
         }
 
         public async Task<WorkItem> GetWorkItemAsync(int workItemId)
         {
-            return await _workItemTrackingHttpClient.GetWorkItemAsync(_teamProjectName, workItemId, null, null, WorkItemExpand.All);
+            return await _workItemTrackingHttpClient.GetWorkItemAsync(teamProjectName, workItemId, null, null, WorkItemExpand.All);
         }
 
         public List<WorkItem> GetWorkItemsLinkedToBuild(List<ResourceRef> workItemReferencesFromBuild, Build build, CreateCrOptions arguments)
@@ -123,10 +117,9 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private RestClient GetWorkItemClientForWorkItemId(string workItemId)
         {
-            var token = _tokenHandler.GetToken();
-            var clientUri = AzureDevOpsApiUriBuilder.GetUriForWorkItemId(_collectionUri, _adoSettings, _teamProjectName, workItemId);
-            var options = RestClientOptionsBuilder.GetRestClientOptions(_adoSettings, token, clientUri);
-            return new RestClient(options);
+            var witLocationUrl = GetResourceLocationUrl(AdoResources.wit);
+            var clientUri = AzureDevOpsApiUriBuilder.GetUriForWorkItemId(witLocationUrl, teamProjectName, workItemId);
+            return GetClient(clientUri);
         }
 
         private string GetWorkItemTags(WorkItem workItem)

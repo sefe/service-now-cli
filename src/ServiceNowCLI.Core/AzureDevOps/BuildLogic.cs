@@ -9,27 +9,21 @@ using ServiceNowCLI.Config.Dtos;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class BuildLogic
+    public class BuildLogic : BaseLogic
     {
         private readonly BuildHttpClient _buildsClient;
-        private readonly string _teamProjectName;
-        private readonly string _collectionUri;
-        private readonly AzureDevOpsSettings _adoSettings;
-        private readonly IAzureDevOpsTokenHandler _tokenHandler;
+        private readonly string teamProjectName;
+        private readonly VssConnection vssConnection;
 
         public BuildLogic(
-            string collectionUri, 
-            string teamProjectName, 
-            AzureDevOpsSettings adoSettings, 
+            string teamProjectName,
+            AzureDevOpsSettings adoSettings,
             IAzureDevOpsTokenHandler tokenHandler,
-            IVssConnectionFactory vssConnectionFactory)
+            VssConnection vssConnection) : base(adoSettings, tokenHandler)
         {
-            _teamProjectName = teamProjectName;
-            _collectionUri = collectionUri;
-            _adoSettings = adoSettings;
-            _tokenHandler = tokenHandler;
+            this.teamProjectName = teamProjectName;
+            this.vssConnection = vssConnection;
 
-            var vssConnection = vssConnectionFactory.CreateVssConnection(collectionUri);
             _buildsClient = vssConnection.GetClient<BuildHttpClient>();
         }
 
@@ -43,7 +37,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             do
             {
                 IPagedList<BuildDefinitionReference> buildsPage = _buildsClient.GetDefinitionsAsync2(
-                    project: _teamProjectName,
+                    project: teamProjectName,
                     builtAfter: DateTime.Today.AddMonths(howManyMonthsAgo * -1),
                     continuationToken: continuationToken).Result;
 
@@ -60,7 +54,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 do
                 {
                     IPagedList<Build> buildsPage = _buildsClient.GetBuildsAsync2(statusFilter: BuildStatus.Completed,
-                        project: _teamProjectName, resultFilter: BuildResult.Succeeded,
+                        project: teamProjectName, resultFilter: BuildResult.Succeeded,
                         definitions: [buildDefinitionReference.Id],
                         continuationToken: continuationToken).Result;
 
@@ -78,10 +72,10 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private RestClient GetBuildClientForBuildId(string buildId)
         {
-            var token = _tokenHandler.GetToken();
-            var clientUri = AzureDevOpsApiUriBuilder.GetUriForBuildId(_collectionUri, _adoSettings, _teamProjectName, buildId);
-            var options = RestClientOptionsBuilder.GetRestClientOptions(_adoSettings, token, clientUri);
-            return new RestClient(options);
+            var buildLocationUrl = GetResourceLocationUrl(AdoResources.build);
+            var clientUri = AzureDevOpsApiUriBuilder.GetUriForBuildId(buildLocationUrl, teamProjectName, buildId);
+
+            return GetClient(clientUri);
         }
 
         public Build GetBuildForId(string buildId)

@@ -4,20 +4,13 @@ using System.Configuration;
 
 namespace ServiceNowCLI.Config
 {
-    public class AzureDevOpsSettingsBuilder : IAzureDevOpsSettingsBuilder
+    public class AzureDevOpsSettingsBuilder(IDorcConfigProvider dorcConfigProvider) : IAzureDevOpsSettingsBuilder
     {
-        private readonly IDorcConfigProvider _dorcConfigProvider;
-
-        public AzureDevOpsSettingsBuilder(IDorcConfigProvider dorcConfigProvider)
-        {
-            _dorcConfigProvider = dorcConfigProvider;
-        }
-
-        public AzureDevOpsSettings GetSettings()
+        public AzureDevOpsSettings GetSettings(bool useDefaultCredentials)
         {
             var dorcPropertyName = ConfigurationManager.AppSettings["DorcPropertyNameForClientSecret"];
 
-            var clientSecret = _dorcConfigProvider.GetDorcPropertyValue(dorcPropertyName);
+            var clientSecret = dorcConfigProvider.GetDorcPropertyValue(dorcPropertyName);
 
             if (string.IsNullOrEmpty(clientSecret)) throw new ArgumentException($"Failed to get AzureDevOps Client Secret from Dorc - DorcPropertyName={dorcPropertyName}");
 
@@ -26,11 +19,9 @@ namespace ServiceNowCLI.Config
                 ClientId = ConfigurationManager.AppSettings["AadClientId"],
                 Scope = ConfigurationManager.AppSettings["AadScope"],
                 TenantId = ConfigurationManager.AppSettings["AadTenantId"],
-                BaseUrl = ConfigurationManager.AppSettings["AdoBaseUrl"],
-                CollectionUrlCloudIndicator = ConfigurationManager.AppSettings["AdoCollectionUrlCloudIndicator"],
-                OrgName = ConfigurationManager.AppSettings["AdoOrgName"],
+                OrganizationUrl = ConfigurationManager.AppSettings["AdoOrganizationUrl"],
                 ClientSecret = clientSecret,
-                ServiceNowApiSubscriptionId = ConfigurationManager.AppSettings["serviceNowApiSubscriptionId"],
+                UseDefaultCredentials = useDefaultCredentials,
             };
 
             return settings;

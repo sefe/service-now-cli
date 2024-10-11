@@ -2,13 +2,16 @@
 
 namespace ServiceNowCLI.Core.Arguments
 {
-    public class OptionsBase
+    public class AdoUriOption
+    {
+        [Option('c', "collectionuri", Required = true, HelpText = "The Azure DevOps Collection URI to use when interacting with Azure DevOps Server")]
+        public string CollectionUri { get; set; }
+    }
+
+    public class OptionsBase: AdoUriOption
     {
         [Option('s', "servicenowapi", Required = true, HelpText = "The endpoint for the Service Now API to use for interacting with Service Manager")]
         public string ServiceNowApi { get; set; }
-
-        [Option('c', "collectionuri", Required = true, HelpText = "The Azure DevOps Collection URI to use when interacting with Azure DevOps Server")]
-        public string CollectionUri { get; set; }
     }
     
     [Verb("createcr", HelpText = "Add file contents to the index.")]
@@ -73,11 +76,8 @@ namespace ServiceNowCLI.Core.Arguments
     }
 
     [Verb("setreleasevariable", HelpText = "Set variable value within a release pipeline.")]
-    public class SetReleaseVariableOptions
+    public class SetReleaseVariableOptions: AdoUriOption
     {
-        [Option('c', "collectionuri", Required = true, HelpText = "The Azure DevOps Collection URI to use when interacting with Azure DevOps Server")]
-        public string CollectionUri { get; set; }
-
         [Option('i', "releaseid", Required = true, HelpText = "Azure DevOps Release ID.")]
         public string ReleaseId { get; set; }
 
