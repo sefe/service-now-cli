@@ -37,7 +37,7 @@ namespace ServiceNowCLI.Core.ServiceNow
                 };
             }
 
-            var configStd = getConfig(arrayStandard, defaultCloseParams, CrStates.Scheduled);
+            var configStd = getConfig(arrayStandard, defaultCloseParams, CrStates.Implement);
             var configNor = getConfig(arrayNormal, defaultCloseParams, CrStates.New);
             var configEme = getConfig(arrayEmergency, defaultCloseParams, CrStates.Authorize);
 

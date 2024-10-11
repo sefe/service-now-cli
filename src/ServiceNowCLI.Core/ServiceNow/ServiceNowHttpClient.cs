@@ -77,6 +77,11 @@ namespace ServiceNowCLI.Core.ServiceNow
             {
                 var crType = cr.type.ToEnum<CrTypes>();
                 var crState = cr.state.ToEnum<CrStates>(); 
+                if (crState == CrStates.Closed)
+                {
+                    Console.WriteLine($"CR {number} is already closed");
+                    return true;
+                }
                 var preCloseState = configurations[crType].CrWorkflow.Find(CrStates.Closed).Previous.Value;
                 UpdateCRStateFromTo(cr.sys_id, crType, crState, preCloseState);
                 return SetCrStateClosed(cr.sys_id, successfully ? CrCloseCodes.successful : CrCloseCodes.unsuccessful, configurations[crType].ClosedStateParams);
