@@ -18,7 +18,7 @@ namespace ServiceNowCLI.Config
 
             if (string.IsNullOrEmpty(organizationUrl)) throw new ArgumentException($"AdoOrganizationUrl is not set in config file");
 
-            bool useDefaultCreds = !organizationUrl.Contains(ConfigurationManager.AppSettings["AdoCollectionUrlCloudIndicator"], StringComparison.OrdinalIgnoreCase); ;
+            bool useDefaultCreds = !organizationUrl.Contains(ConfigurationManager.AppSettings["AdoCollectionUrlCloudIndicator"], StringComparison.OrdinalIgnoreCase);
 
             var settings = new AzureDevOpsSettings
             {

@@ -13,7 +13,6 @@ namespace ServiceNowCLI.Core.AzureDevOps
     {
         private readonly BuildHttpClient _buildsClient;
         private readonly string teamProjectName;
-        private readonly VssConnection vssConnection;
 
         public BuildLogic(
             string teamProjectName,
@@ -22,7 +21,6 @@ namespace ServiceNowCLI.Core.AzureDevOps
             VssConnection vssConnection) : base(adoSettings, tokenHandler)
         {
             this.teamProjectName = teamProjectName;
-            this.vssConnection = vssConnection;
 
             _buildsClient = vssConnection.GetClient<BuildHttpClient>();
         }

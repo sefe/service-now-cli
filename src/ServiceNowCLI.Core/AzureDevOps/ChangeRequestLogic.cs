@@ -82,7 +82,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             var changeRequest = CreateChangeRequest(crInputs, arguments, changeDescriptions);
 
-            var crNumber = CallServiceNowToCreateChangeRequest(arguments, changeRequest);
+            var crNumber = CallServiceNowToCreateChangeRequest(changeRequest);
 
             if (!string.IsNullOrEmpty(crNumber))
             {
@@ -267,7 +267,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             }
         }
 
-        private string CallServiceNowToCreateChangeRequest(CreateCrOptions arguments, ChangeRequestModel changeRequest)
+        private string CallServiceNowToCreateChangeRequest(ChangeRequestModel changeRequest)
         {
             Console.WriteLine($"Submitting CR: {JsonConvert.SerializeObject(changeRequest, Formatting.Indented)}");
             try

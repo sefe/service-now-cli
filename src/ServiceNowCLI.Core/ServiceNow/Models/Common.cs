@@ -2,12 +2,12 @@
 {
     public class ResultArray<T>
     {
-        public T[] result;
+        public T[] result { get; set; }
     }
 
     public class ResultObject<T>
     {
-        public T result;
+        public T result { get; set; }
     }
 
     public enum CrStates

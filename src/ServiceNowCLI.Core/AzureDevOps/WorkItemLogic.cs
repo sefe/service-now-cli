@@ -16,7 +16,6 @@ namespace ServiceNowCLI.Core.AzureDevOps
     {
         private readonly WorkItemTrackingHttpClient _workItemTrackingHttpClient;
         private readonly string teamProjectName;
-        private readonly VssConnection vssConnection;
 
         public WorkItemLogic(
             string teamProjectName,
@@ -25,7 +24,6 @@ namespace ServiceNowCLI.Core.AzureDevOps
             VssConnection vssConnection) : base(adoSettings, tokenHandler)
         {
             this.teamProjectName = teamProjectName;
-            this.vssConnection = vssConnection;
 
             _workItemTrackingHttpClient = vssConnection.GetClient<WorkItemTrackingHttpClient>();
         }
