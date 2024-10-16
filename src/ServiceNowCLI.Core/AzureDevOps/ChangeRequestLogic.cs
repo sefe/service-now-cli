@@ -294,6 +294,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 description =
                     $"The following enhancements will be delivered by this CR:{Environment.NewLine}{crDescription}",
                 requested_by = arguments.ReleaseDeploymentRequestedFor,
+                correlation_id = string.IsNullOrEmpty(crInputs.correlation_id) ? arguments.ExistingCr : null
             };
         } 
 
