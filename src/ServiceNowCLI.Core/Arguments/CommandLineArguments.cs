@@ -37,8 +37,8 @@ namespace ServiceNowCLI.Core.Arguments
 
     public class SetActivityOptions
     {
-        [Option('a', "activitytitle", Required = false, HelpText = "Activity in Change Request to update.")]
-        public string Activity { get; set; }
+        [Option('n', "closenote", Required = false, HelpText = "Close note for Change Request.")]
+        public string CloseNote { get; set; }
 
         [Option('r', "changeno", Required = true, HelpText = "Change Request to Update, in format 'CR123456'.")]
         public string ChangeNo { get; set; }

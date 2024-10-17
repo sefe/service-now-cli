@@ -70,7 +70,7 @@ namespace ServiceNowCLI.Core.ServiceNow
             }
         }
 
-        public bool CompleteCR(string number, bool successfully = true)
+        public bool CompleteCR(string number, bool successfully = true, string closeNote = "")
         {
             var cr = GetCrByNumber(number);
             if (cr != null)
@@ -84,7 +84,13 @@ namespace ServiceNowCLI.Core.ServiceNow
                 }
                 var preCloseState = configurations[crType].CrWorkflow.Find(CrStates.Closed).Previous.Value;
                 UpdateCRStateFromTo(cr.sys_id, crType, crState, preCloseState);
-                return SetCrStateClosed(cr.sys_id, successfully ? CrCloseCodes.successful : CrCloseCodes.unsuccessful, configurations[crType].ClosedStateParams);
+
+                if (string.IsNullOrEmpty(closeNote))
+                {
+                    closeNote = configurations[crType].ClosedStateParams[CloseFields.CloseNotes];
+                }
+
+                return SetCrStateClosed(cr.sys_id, successfully ? CrCloseCodes.successful : CrCloseCodes.unsuccessful, closeNote);
             }
             return false;
         }
@@ -166,13 +172,13 @@ namespace ServiceNowCLI.Core.ServiceNow
             });
         }
 
-        private bool SetCrStateClosed(string sysId, CrCloseCodes close_code, Dictionary<string, string> closeParams)
+        private bool SetCrStateClosed(string sysId, CrCloseCodes close_code, string closeNote, string reason = "")
         {
             return SetCrStateWithBody(sysId, CrStates.Closed, new SnChangeRequestModel
             {
                 close_code = close_code.ToString(),
-                close_notes = closeParams[CloseFields.CloseNotes],
-                reason = closeParams.GetValueOrDefault(CloseFields.Reason) ?? ""
+                close_notes = closeNote,
+                reason = reason
             });
         }
 

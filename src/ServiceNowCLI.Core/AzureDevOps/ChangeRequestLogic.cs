@@ -1,6 +1,7 @@
 ﻿using Fluid;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Newtonsoft.Json;
+using Parlot.Fluent;
 using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Arguments;
 using ServiceNowCLI.Core.ServiceNow;
@@ -22,15 +23,17 @@ namespace ServiceNowCLI.Core.AzureDevOps
         public object CompleteActivity(SetActivityOptions opts, bool successfully)
         {
             var successName = successfully ? "Succeeded" : "Failed";
-            Console.WriteLine("Setting Activity " + opts.Activity + $" To {successName}.");
+            string note = !string.IsNullOrEmpty(opts.CloseNote) ? $" with note: {opts.CloseNote}" : "";
+
+            Console.WriteLine($"Closing CR {opts.ChangeNo} as {successName}{note}...");
 
             var client = new ServiceNowHttpClient(snSettings, tokenHandler.GetToken());
 
-            var isCompleted = client.CompleteCR(opts.ChangeNo, successfully);
+            var isCompleted = client.CompleteCR(opts.ChangeNo, successfully, opts.CloseNote);
             
             if (isCompleted)
             {
-                Console.WriteLine($"{opts.ChangeNo} activity {opts.Activity} set to {successName} completed.");
+                Console.WriteLine($"Closing CR {opts.ChangeNo} as {successName} has been finished.");
             }
             else
             {

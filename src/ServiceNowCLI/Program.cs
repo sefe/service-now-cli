@@ -13,8 +13,8 @@ namespace ServiceNowCLI
 {
     // Sample cmd line -
     // createcr -b "BuildNumber_21.11.22.1" -r "ReleaseNumber_21.11.22.1-Release_01" -e "NonProd" -u "user" -p "cr-inputs.json" -t "template.liquid" -i "15151" -m "comm-inputs.json"
-    // createcr -b "BuildNumber_21.11.22.1" -r "ReleaseNumber_21.11.22.1-Release_01" -e "NonProd" -u "user" -p "cr-inputs.json" -t "template.liquid" -i "15151" -m "comm-inputs.json" -x "CR18962"
-    // activitysuccess -a "CR Implementation Phase" -c "CR8188" 
+    // createcr -b "BuildNumber_21.11.22.1" -r "ReleaseNumber_21.11.22.1-Release_01" -e "NonProd" -u "user" -p "cr-inputs.json" -t "template.liquid" -i "15151" -m "comm-inputs.json" -x "CHG0018962"
+    // activitysuccess -n "Implementation Finished" -c "CHG0018188" 
     // setreleasevariable -t "ProjectName" -i "13157" -n "Comms_ReleaseID" -v "123456"
     // createcr -b "BuildNumber_23.11.3.2" -r "ReleaseNumber_23.11.3.2-Release_01" -e "NonProd" -u "user" -p "cr-inputs.json" -i "35313" -m "comm-inputs.json"
 
