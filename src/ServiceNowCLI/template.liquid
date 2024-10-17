@@ -4,8 +4,9 @@
 	"BranchingStrategy": "{{BranchingStrategy}}",
 	"TeamProjectName": "{{TeamProjectName}}",
 
-	"assignment_group": "{{assignment_group | default: 'Change Manager'}}",
-	"chg_model": "{{chg_model | default: 'Standard'}}", 
+	"assignment_group": "{{SupportGroup | split: '\\' | last | default: 'Change Manager'}}",
+	"chg_model": "{{chg_model | default: 'Standard'}}",
+	"business_service": "{{ Area | split: '\\' | last }}",
 	"backout_plan": "{{ImplementationPlan.Rollback}}",
 	"implementation_plan": "Pre Production: \r\n{{ImplementationPlan.PreProduction}}\r\n==================================\r\nProduction:\r\n{{ImplementationPlan.Production}}",
 	"short_description": "{{Title}}",
