@@ -12,8 +12,12 @@
   "short_description": "[Company] [Tribe] Release new/updates to AppName",
   "justification": "Automated Release for AppName.",
   "test_plan": "AppName is tested in production by the business, no UAT sign-off.",
-  "work_notes": "",
   "risk_impact_analysis": "OutageOrRestrictedFunctionality: false;\r\n ServiceImpactedOnFailure: false;\r\nCriticality: Minor",
   "type": "Standard",
-  "risk": "Low"
+  "work_notes": "",
+  "category": "",
+  "correlation_id": "",
+  "impact": "",
+  "priority": "",
+  "urgency":  ""
 }

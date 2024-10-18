@@ -121,12 +121,22 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 }
                 else
                 {
-                    throw new ArgumentException($"Template parsing failed: {error}");
+                    throw new ArgumentException($"Bad template '{arguments.TransformTemplateFile}', parsing failed: {error}");
                 }
             }
             else
             {
                 inputContent = File.ReadAllText(arguments.CrParamsFile);
+            }
+
+            try
+            {
+                JsonConvert.DeserializeObject<object>(inputContent);
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine($"result after template render: \n{inputContent}");
+                throw new ArgumentException($"Bad template '{arguments.TransformTemplateFile}', it produces non json output: {exc.Message}");
             }
 
             return inputContent;
