@@ -25,7 +25,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             _buildsClient = vssConnection.GetClient<BuildHttpClient>();
         }
 
-        public IEnumerable<Build> GetRecentBuilds(int howManyMonthsAgo)
+        public IEnumerable<Build> GetRecentBuilds(int howManyMonthsAgo, string buildNumber=null)
         {
             Console.WriteLine($"Getting recent builds... starting getting last {howManyMonthsAgo} months");
 
@@ -47,21 +47,21 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             var builds = new List<Build>();
 
-            foreach (var buildDefinitionReference in buildDefinitions)
+            var definitionIds = buildDefinitions.Select(d => d.Id).ToArray();
+            do
             {
-                do
-                {
-                    IPagedList<Build> buildsPage = _buildsClient.GetBuildsAsync2(statusFilter: BuildStatus.Completed,
-                        project: teamProjectName, resultFilter: BuildResult.Succeeded,
-                        definitions: [buildDefinitionReference.Id],
-                        continuationToken: continuationToken).Result;
+                IPagedList<Build> buildsPage = _buildsClient.GetBuildsAsync2(
+                    buildNumber: buildNumber,
+                    project: teamProjectName,
+                    definitions: definitionIds,
+                    continuationToken: continuationToken).Result;
 
-                    builds.AddRange(buildsPage);
+                builds.AddRange(buildsPage);
 
-                    continuationToken = buildsPage.ContinuationToken;
+                continuationToken = buildsPage.ContinuationToken;
 
-                } while (!string.IsNullOrEmpty(continuationToken));
-            }
+            } while (!string.IsNullOrEmpty(continuationToken));
+            
 
             Console.WriteLine($"Getting recent builds... finished. {builds.Count} builds returned");
 
@@ -102,7 +102,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         public Build GetBuildForBuildNumber(string buildNumber)
         {
-            var recentBuilds = GetRecentBuilds(3);
+            var recentBuilds = GetRecentBuilds(3, buildNumber);
             var build = recentBuilds.FirstOrDefault(b => b.BuildNumber == buildNumber);
             return build;
         }

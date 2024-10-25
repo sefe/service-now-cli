@@ -144,11 +144,14 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private Build GetBuildForRelease(ReleaseLogic releaseLogic, BuildLogic buildLogic, CreateCrOptions arguments)
         {
-            var buildFromReleaseId = GetBuildFromReleaseId(releaseLogic, buildLogic, arguments);
-
-            if (buildFromReleaseId != null)
+            if (!string.IsNullOrEmpty(arguments.ReleaseId))
             {
-                return buildFromReleaseId;
+                var buildFromReleaseId = GetBuildFromReleaseId(releaseLogic, buildLogic, arguments.ReleaseId);
+
+                if (buildFromReleaseId != null)
+                {
+                    return buildFromReleaseId;
+                }
             }
             
             var buildArgument = arguments.BuildNumber;
@@ -164,26 +167,26 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return buildFromBuildNumberInArguments;
         }
 
-        private Build GetBuildFromReleaseId(ReleaseLogic releaseLogic, BuildLogic buildLogic, CreateCrOptions arguments)
+        private Build GetBuildFromReleaseId(ReleaseLogic releaseLogic, BuildLogic buildLogic, string ReleaseId)
         {
             try
             {
-                Console.WriteLine($"Trying to get Build Id from Release Id {arguments.ReleaseId}");
-                var buildId = releaseLogic.GetBuildIdFromRelease(arguments.ReleaseId);
+                Console.WriteLine($"Trying to get Build Id from Release Id {ReleaseId}");
+                var buildId = releaseLogic.GetBuildIdFromRelease(ReleaseId);
 
                 if (!string.IsNullOrEmpty(buildId))
                 {
-                    Console.WriteLine($"Build Id = {buildId} for Release Id {arguments.ReleaseId}. Trying to get build definition.");
+                    Console.WriteLine($"Build Id = {buildId} for Release Id {ReleaseId}. Trying to get build definition.");
                     var build = buildLogic.GetBuildForId(buildId);
                     return build;
                 }
 
-                Console.WriteLine($"Failed to get Build Id from Release Id {arguments.ReleaseId}");
+                Console.WriteLine($"Failed to get Build Id from Release Id {ReleaseId}");
                 return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to get build from release ID {arguments.ReleaseId}. Exception = {ex}");
+                Console.WriteLine($"Failed to get build from release ID {ReleaseId}. Exception = {ex}");
                 return null;
             }
 
@@ -402,7 +405,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 Console.WriteLine($"If this was a production deploy, the build isn't a valid branch for release and so would fail here.");
             }
             
-            if (build.RetainedByRelease != true)
+            if (build.RetainedByRelease != true && build.KeepForever != true)
             {
                 throw new ArgumentException($"Cannot raise a CR for Build {crArguments.BuildNumber} as this is not a pinned build. Pin the build and re-run the CR Creator");
             }
