@@ -1,7 +1,7 @@
 ﻿using Fluid;
 using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.TeamFoundation.Build.WebApi;
-using Microsoft.VisualStudio.Services.WebApi;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Newtonsoft.Json;
 using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Arguments;
@@ -74,7 +74,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var changeDescriptionGenerator = new ChangeDescriptionGenerator();
 
             var build = GetBuildForRelease(releaseLogic, buildLogic, arguments);
-            var pipeline = GetPipeline(vssConnection, crInputs.TeamProjectName, build.Definition.Id);
+            var pipeline = BuildLogic.GetPipeline(vssConnection, crInputs.TeamProjectName, build.Definition.Id);
 
             var isProd = IsReleaseEnvironmentProd(arguments.Environment);
 
@@ -92,22 +92,22 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             if (!string.IsNullOrEmpty(crNumber))
             {
-                ProcessChangeRequestCreatedSuccessfully(
-                    crNumber,
-                    changeDescriptions,
-                    arguments,
-                    workItems,
-                    releaseLogic,
-                    workItemLogic,
-                    changeRequest,
-                    commSettings,
-                    isProd);
-            }
-        }
+                Console.WriteLine($"CR raised: {crNumber}");
 
-        private static Pipeline GetPipeline(VssConnection vssConnection, string teamProjectName, int pipelineId)
-        {
-            return vssConnection.GetClient<PipelinesHttpClient>().GetPipelineAsync(teamProjectName, pipelineId).GetAwaiter().GetResult();
+                AddTagsToWit(crNumber, workItems, workItemLogic, isProd);
+
+                var variables = CollectPipelineVariablesToSet(
+                    changeDescriptions,
+                    crNumber,
+                    changeRequest.ScheduledStartDate,
+                    changeRequest.ScheduledEndDate,
+                    commSettings);
+
+                AddVariablesToPipeline(
+                    variables,
+                    arguments.ReleaseId,
+                    releaseLogic);
+            }
         }
 
         private static string GetInputFileString(CreateCrOptions arguments)
@@ -226,40 +226,28 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return commSettings;
         }
 
-        private void ProcessChangeRequestCreatedSuccessfully(
-            string crNumber, 
-            List<string> crChangesList, 
-            CreateCrOptions arguments,
-            List<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> workItems,
-            ReleaseLogic releaseLogic,
-            WorkItemLogic workItemLogic,
-            ChangeRequestModel changeRequest,
-            CommSettings commSettings,
-            bool isProd
+        private void AddVariablesToPipeline(
+            Dictionary<string, string> variables,
+            string releaseId,
+            ReleaseLogic releaseLogic
             )
         {
-            Console.WriteLine($"CR raised: {crNumber}");
-
-            var tagPrefix = !isProd ? "AutoDv" : "Auto";
-            var crNumberTag = tagPrefix + crNumber.Replace("\"", "");
-
-            AddCrNumberTagToPbis(workItems, workItemLogic, crNumberTag);
-
-            if (!string.IsNullOrEmpty(arguments.ReleaseId))
+            if (!string.IsNullOrEmpty(releaseId))
             {
-                SetVariablesInReleaseId(
-                    releaseLogic, 
-                    arguments.ReleaseId,
-                    crChangesList, 
-                    crNumber, 
-                    changeRequest.ScheduledStartDate, 
-                    changeRequest.ScheduledEndDate,
-                    commSettings);
+                releaseLogic.UpdateReleaseVariables(releaseId, variables);
             }
             else
             {
                 Console.WriteLine("Release ID not specified so no variables will be saved in the release");
             }
+        }
+
+        private void AddTagsToWit(string crNumber, List<WorkItem> workItems, WorkItemLogic workItemLogic, bool isProd)
+        {
+            var tagPrefix = !isProd ? "AutoDv" : "Auto";
+            var crNumberTag = tagPrefix + crNumber.Replace("\"", "");
+
+            AddCrNumberTagToPbis(workItems, workItemLogic, crNumberTag);
         }
 
         private bool IsReleaseEnvironmentProd(string envinronment)
@@ -322,14 +310,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             };
         } 
 
-        private void SetVariablesInReleaseId(
-            ReleaseLogic releaseLogic, 
-            string releaseId, 
-            List<string> changeChangesList, 
-            string crNumber,
-            DateTime startDateTime,
-            DateTime endDateTime,
-            CommSettings commSettings)
+        private Dictionary<string, string> CollectPipelineVariablesToSet(List<string> changeChangesList, string crNumber, DateTime startDateTime, DateTime endDateTime, CommSettings commSettings)
         {
             var startDateTimeLocal = startDateTime.ToLocalTime();
             var endDateTimeLocal = endDateTime.ToLocalTime();
@@ -342,8 +323,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             };
 
             AddCommSettingVariables(variables, commSettings, changeChangesList);
-
-            releaseLogic.UpdateReleaseVariables(releaseId, variables);
+            return variables;
         }
 
         private void AddCommSettingVariables(

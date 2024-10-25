@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using RestSharp;
@@ -66,6 +68,11 @@ namespace ServiceNowCLI.Core.AzureDevOps
             Console.WriteLine($"Getting recent builds... finished. {builds.Count} builds returned");
 
             return builds;
+        }
+
+        public static Pipeline GetPipeline(VssConnection vssConnection, string teamProjectName, int pipelineId)
+        {
+            return vssConnection.GetClient<PipelinesHttpClient>().GetPipelineAsync(teamProjectName, pipelineId).GetAwaiter().GetResult();
         }
 
         private RestClient GetBuildClientForBuildId(string buildId)
