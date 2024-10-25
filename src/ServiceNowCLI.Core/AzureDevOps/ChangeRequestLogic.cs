@@ -1,7 +1,8 @@
 ﻿using Fluid;
+using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
-using Parlot.Fluent;
 using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Arguments;
 using ServiceNowCLI.Core.ServiceNow;
@@ -73,11 +74,13 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var changeDescriptionGenerator = new ChangeDescriptionGenerator();
 
             var build = GetBuildForRelease(releaseLogic, buildLogic, arguments);
+            var pipeline = GetPipeline(vssConnection, crInputs.TeamProjectName, build.Definition.Id);
+
             var isProd = IsReleaseEnvironmentProd(arguments.Environment);
 
             Console.WriteLine($"Got build, BuildNumber={build.BuildNumber}, BuildId={build.Id}");
 
-            ValidateBranchUsedForBuild(arguments, build, crInputs, isProd);
+            ValidateBranchUsedForBuild(arguments, build, crInputs, isProd, pipeline.Configuration.Type == ConfigurationType.Yaml);
 
             var buildLinkedWorkItemReferences = buildLogic.GetBuildLinkedWorkItems(build);
             var workItems = workItemLogic.GetWorkItemsLinkedToBuild(buildLinkedWorkItemReferences, build, arguments);
@@ -100,6 +103,11 @@ namespace ServiceNowCLI.Core.AzureDevOps
                     commSettings,
                     isProd);
             }
+        }
+
+        private static Pipeline GetPipeline(VssConnection vssConnection, string teamProjectName, int pipelineId)
+        {
+            return vssConnection.GetClient<PipelinesHttpClient>().GetPipelineAsync(teamProjectName, pipelineId).GetAwaiter().GetResult();
         }
 
         private static string GetInputFileString(CreateCrOptions arguments)
@@ -387,7 +395,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return sb.ToString();
         }
 
-        private void ValidateBranchUsedForBuild(CreateCrOptions crArguments, Build build, CreateChangeRequestInput crInputs, bool isProd)
+        private void ValidateBranchUsedForBuild(CreateCrOptions crArguments, Build build, CreateChangeRequestInput crInputs, bool isProd, bool isYamlPipeline)
         {
             Dictionary<BranchingStrategies, string[]> branches =
             new()
@@ -405,7 +413,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 Console.WriteLine($"If this was a production deploy, the build isn't a valid branch for release and so would fail here.");
             }
             
-            if (build.RetainedByRelease != true && build.KeepForever != true)
+            if (!isYamlPipeline && build.RetainedByRelease != true)
             {
                 throw new ArgumentException($"Cannot raise a CR for Build {crArguments.BuildNumber} as this is not a pinned build. Pin the build and re-run the CR Creator");
             }
