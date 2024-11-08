@@ -37,6 +37,7 @@ namespace ServiceNowCLI
 
             if (Environment.UserInteractive)
             {
+                Console.WriteLine("User interactive mode, please press any key to end the process..");
                 Console.ReadKey();
             }
 
