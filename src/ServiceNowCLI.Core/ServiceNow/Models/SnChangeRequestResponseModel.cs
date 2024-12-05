@@ -2,12 +2,14 @@
 {
     public class SnChangeRequestResponseModel
     {
+        public BaseLink assigned_to { get; set; }
         public BaseLink assignment_group { get; set; }
         public BaseLink business_service { get; set; }
         public BaseLink chg_model { get; set; }
         public BaseLink closed_by { get; set; }
         public BaseLink opened_by { get; set; }
         public BaseLink requested_by { get; set; }
+        public BaseLink service_offering { get; set; }
         public BaseLink std_change_producer_version { get; set; }
         public BaseLink sys_domain { get; set; }
         public string active { get; set; }
@@ -15,7 +17,6 @@
         public string additional_assignee_list { get; set; }
         public string approval { get; set; }
         public string approval_history { get; set; }
-        public string assigned_to { get; set; }
         public string backout_plan { get; set; }
         public string business_duration { get; set; }
         public string cab_date_time { get; set; }
@@ -76,7 +77,6 @@
         public string risk_value { get; set; }
         public string route_reason { get; set; }
         public string scope { get; set; }
-        public string service_offering { get; set; }
         public string short_description { get; set; }
         public string sla_due { get; set; }
         public string start_date { get; set; }
