@@ -62,6 +62,12 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         private void CreateNewChangeRequest(CreateCrOptions arguments)
         {
+            if (!string.IsNullOrEmpty(arguments.OutputCrNumberFile))
+            {
+                // clean content of the file in case smth fails, no need to keep the old CR number there
+                File.WriteAllText(arguments.OutputCrNumberFile, "");
+            }
+
             Console.WriteLine($"CreateNewChangeRequest - arguments: {JsonConvert.SerializeObject(arguments)}");
             string inputContent = GetInputFileString(arguments);
             var vssConnection = vssConnectionFactory.CreateVssConnection(adoSettings);
