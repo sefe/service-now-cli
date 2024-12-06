@@ -111,10 +111,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 if (!string.IsNullOrEmpty(arguments.OutputCrNumberFile))
                 {
                     Console.WriteLine($"Writing CR number to file: {arguments.OutputCrNumberFile}");
-                    using (var writer = File.AppendText(arguments.OutputCrNumberFile))
-                    {
-                        writer.Write(crNumber);
-                    }
+                    File.WriteAllText(arguments.OutputCrNumberFile, crNumber);
                 }
             }
         }
