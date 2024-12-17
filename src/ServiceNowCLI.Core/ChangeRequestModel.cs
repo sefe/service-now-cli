@@ -34,6 +34,7 @@ namespace ServiceNowCLI.Core
             business_service = inputs.business_service;
             category = inputs.category;
             chg_model = inputs.chg_model;
+            cmdb_ci = inputs.cmdb_ci;
             correlation_id = inputs.correlation_id;
             description = inputs.description;
             impact = inputs.impact;
@@ -44,6 +45,7 @@ namespace ServiceNowCLI.Core
             requested_by = inputs.requested_by;
             risk = inputs.risk;
             risk_impact_analysis = inputs.risk_impact_analysis;
+            service_offering = inputs.service_offering;
             short_description = inputs.short_description;
             std_change_producer_version = inputs.std_change_producer_version;
             test_plan = inputs.test_plan;
@@ -57,6 +59,7 @@ namespace ServiceNowCLI.Core
         public string business_service { get; set; }
         public string category { get; set; }
         public string chg_model { get; set; }
+        public string cmdb_ci { get; set; }
         public string correlation_id { get; set; }
         public string description { get; set; }
         public string end_date { get; set; }
@@ -68,6 +71,7 @@ namespace ServiceNowCLI.Core
         public string requested_by { get; set; }
         public string risk { get; set; }
         public string risk_impact_analysis { get; set; }
+        public string service_offering { get; set; }
         public string short_description { get; set; }
         public string start_date { get; set; }
         public string std_change_producer_version { get; set; }

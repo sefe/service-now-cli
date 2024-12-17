@@ -21,6 +21,7 @@
         public string requested_by { get; set; }
         public string risk { get; set; }
         public string risk_impact_analysis { get; set; }
+        public string service_offering { get; set; }
         public string short_description { get; set; }
         public string start_date { get; set; }
         public string state { get; set; }

@@ -7,6 +7,7 @@
         string business_service { get; set; }
         string category { get; set; }
         string chg_model { get; set; }
+        string cmdb_ci { get; set; }
         string correlation_id { get; set; }
         string description { get; set; }
         string end_date { get; set; }
@@ -18,6 +19,7 @@
         string requested_by { get; set; }
         string risk { get; set; }
         string risk_impact_analysis { get; set; }
+        string service_offering { get; set; }
         string short_description { get; set; }
         string start_date { get; set; }
         string std_change_producer_version { get; set; }
