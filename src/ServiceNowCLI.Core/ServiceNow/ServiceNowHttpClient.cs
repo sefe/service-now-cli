@@ -92,7 +92,7 @@ namespace ServiceNowCLI.Core.ServiceNow
 
                 return SetCrStateClosed(cr.sys_id, successfully ? CrCloseCodes.successful : CrCloseCodes.unsuccessful, closeNote);
             }
-            return false;
+            throw new ArgumentException($"Cannot get CR for closing, number={number}");
         }
 
         public bool CancelCRByNumber(string number)
@@ -113,7 +113,9 @@ namespace ServiceNowCLI.Core.ServiceNow
                 }
                 else
                 {
-                    Console.WriteLine($"Several CRs found by number = {number}");
+                    if (res.result.Length > 1)
+                        Console.WriteLine($"Several CRs were found by number = {number}");
+                    else Console.WriteLine($"CR was not found by number = {number}");
                 }
             }
             else
