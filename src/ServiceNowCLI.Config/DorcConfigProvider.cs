@@ -20,10 +20,15 @@ namespace ServiceNowCLI.Config
 
             var response = httpClient.GetAsync($"PropertyValues?environmentName={dorcEnvironment}&propertyName={dorcPropertyName}").GetAwaiter().GetResult();
             var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-            var dorcPropertyValue = JsonConvert.DeserializeObject<DorcPropertyValue[]>(responseContent);
-
-            return dorcPropertyValue[0].Value;
+            try
+            {
+                var dorcPropertyValue = JsonConvert.DeserializeObject<DorcPropertyValue[]>(responseContent);
+                return dorcPropertyValue[0].Value;
+            }
+            catch
+            {
+                throw new ArgumentException($"Failed to get property from Dorc: Environment={dorcEnvironment}, PropertyName={dorcPropertyName}");
+            }            
         }
     }
 }
