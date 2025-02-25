@@ -312,6 +312,11 @@ namespace ServiceNowCLI.Core.AzureDevOps
         private ChangeRequestModel CreateChangeRequest(CreateChangeRequestInput crInputs, CreateCrOptions arguments, List<string> changeDescriptions)
         {
             var crDescription = string.Join(Environment.NewLine, changeDescriptions);
+            
+            if (!string.IsNullOrWhiteSpace(crInputs.description))
+            {
+                crDescription = $"{crDescription}{Environment.NewLine}{Environment.NewLine}{crInputs.description}";
+            }
 
             return new ChangeRequestModel(crInputs)
             {
