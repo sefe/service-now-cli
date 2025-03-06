@@ -80,13 +80,13 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var changeDescriptionGenerator = new ChangeDescriptionGenerator();
 
             var build = GetBuildForRelease(releaseLogic, buildLogic, arguments);
-            var pipeline = BuildLogic.GetPipeline(vssConnection, crInputs.TeamProjectName, build.Definition.Id);
+            var pipeline = buildLogic.GetPipeline(crInputs.TeamProjectName, build.Definition.Id);
 
             var isProd = IsReleaseEnvironmentProd(arguments.Environment);
 
             Console.WriteLine($"Got build, BuildNumber={build.BuildNumber}, BuildId={build.Id}");
 
-            ValidateBranchUsedForBuild(arguments, build, crInputs, isProd, pipeline.Configuration.Type == ConfigurationType.Yaml);
+            ValidateBranchUsedForBuild(buildLogic, build, crInputs, isProd, pipeline.Configuration.Type == ConfigurationType.Yaml);
 
             var buildLinkedWorkItemReferences = buildLogic.GetBuildLinkedWorkItems(build);
             var workItems = workItemLogic.GetWorkItemsLinkedToBuild(buildLinkedWorkItemReferences, build, arguments);
@@ -392,7 +392,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return sb.ToString();
         }
 
-        private void ValidateBranchUsedForBuild(CreateCrOptions crArguments, Build build, CreateChangeRequestInput crInputs, bool isProd, bool isYamlPipeline)
+        private void ValidateBranchUsedForBuild(BuildLogic buildLogic, Build build, CreateChangeRequestInput crInputs, bool isProd, bool isYamlPipeline)
         {
             Dictionary<BranchingStrategies, string[]> branches =
             new()
@@ -401,18 +401,31 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 {BranchingStrategies.GitFlow, new string[] {"release", "master", "develop", "hotfix", "main"}}
             };
 
-            if (!build.SourceBranch.ContainsAny(branches[crInputs.BranchingStrategy]))
+            var branchesToCheck = new List<string> { build.SourceBranch };
+            if (build.SourceBranch.StartsWith("refs/tags"))
+            {
+                // here we need to check in which branches tag is created
+                var tagname = build.SourceBranch.Split('/').Last();
+                Console.WriteLine($"Build by tag '{tagname}'. Checking branches containing this tag");
+
+                var repoId = build.Repository.Id;
+                var branchesForTag = buildLogic.GetBranchesForTag(tagname, repoId);
+
+                branchesToCheck.AddRange(branchesForTag);
+            }
+
+            if (!branchesToCheck.Any(b => b.ContainsAny(branches[crInputs.BranchingStrategy])))
             {
                 if (isProd)
                     throw new ArgumentException(
-                        $"Cannot raise a CR for Build {crArguments.BuildNumber} as this is not a valid branch for release!\nYou have specified {crInputs.BranchingStrategy} as your branching strategy, which includes the following releasable branches: {string.Join("|", branches[crInputs.BranchingStrategy])}");
+                        $"Cannot raise a CR for Build {build.BuildNumber} as this is not a valid branch for release!\nYou have specified {crInputs.BranchingStrategy} as your branching strategy, which includes the following releasable branches: {string.Join("|", branches[crInputs.BranchingStrategy])}");
 
                 Console.WriteLine($"If this was a production deploy, the build isn't a valid branch for release and so would fail here.");
             }
             
             if (!isYamlPipeline && build.RetainedByRelease != true)
             {
-                throw new ArgumentException($"Cannot raise a CR for Build {crArguments.BuildNumber} as this is not a pinned build. Pin the build and re-run the CR Creator");
+                throw new ArgumentException($"Cannot raise a CR for Build {build.BuildNumber} as this is not a pinned build. Pin the build and re-run the CR Creator");
             }
         }
     }

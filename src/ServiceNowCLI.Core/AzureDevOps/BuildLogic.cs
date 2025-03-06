@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
@@ -15,6 +16,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
     {
         private readonly BuildHttpClient _buildsClient;
         private readonly string teamProjectName;
+        private readonly VssConnection vssConnection;
 
         public BuildLogic(
             string teamProjectName,
@@ -23,6 +25,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             VssConnection vssConnection) : base(adoSettings, tokenHandler)
         {
             this.teamProjectName = teamProjectName;
+            this.vssConnection = vssConnection;
 
             _buildsClient = vssConnection.GetClient<BuildHttpClient>();
         }
@@ -70,7 +73,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return builds;
         }
 
-        public static Pipeline GetPipeline(VssConnection vssConnection, string teamProjectName, int pipelineId)
+        public Pipeline GetPipeline(string teamProjectName, int pipelineId)
         {
             return vssConnection.GetClient<PipelinesHttpClient>().GetPipelineAsync(teamProjectName, pipelineId).GetAwaiter().GetResult();
         }
@@ -129,6 +132,19 @@ namespace ServiceNowCLI.Core.AzureDevOps
             Console.WriteLine($"{workItems.Count} linked work items found for BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
 
             return workItems;
+        }
+
+        public List<string> GetBranchesForTag(string tagName, string repoId)
+        {
+            var gitClient = vssConnection.GetClient<GitHttpClient>();
+
+            var branches = gitClient.GetBranchesAsync(repoId, new GitVersionDescriptor
+            {
+                Version = tagName,
+                VersionType = GitVersionType.Tag
+            }).Result;
+
+            return branches.Select(b => b.Name).ToList();           
         }
     }
 }
