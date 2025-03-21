@@ -423,7 +423,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 Console.WriteLine($"If this was a production deploy, the build isn't a valid branch for release and so would fail here.");
             }
             
-            if (!isYamlPipeline && build.RetainedByRelease != true)
+            if (!isYamlPipeline && build.RetainedByRelease != true && build.KeepForever != true)
             {
                 throw new ArgumentException($"Cannot raise a CR for Build {build.BuildNumber} as this is not a pinned build. Pin the build and re-run the CR Creator");
             }
