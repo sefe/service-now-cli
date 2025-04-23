@@ -4,6 +4,7 @@ using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Newtonsoft.Json;
 using ServiceNowCLI.Config.Dtos;
+using ServiceNowCLI.Core.Aikido;
 using ServiceNowCLI.Core.Arguments;
 using ServiceNowCLI.Core.ServiceNow;
 using System;
@@ -14,7 +15,7 @@ using System.Text;
 
 namespace ServiceNowCLI.Core.AzureDevOps
 {
-    public class ChangeRequestLogic(AzureDevOpsSettings adoSettings, ServiceNowSettings snSettings, IAzureDevOpsTokenHandler tokenHandler, IVssConnectionFactory vssConnectionFactory)
+    public class ChangeRequestLogic(AzureDevOpsSettings adoSettings, ServiceNowSettings snSettings, IAzureDevOpsTokenHandler tokenHandler, IVssConnectionFactory vssConnectionFactory, AikidoSettings aikidoSettings)
     {
         public void CreateChangeRequest(CreateCrOptions arguments)
         {
@@ -119,6 +120,10 @@ namespace ServiceNowCLI.Core.AzureDevOps
                     Console.WriteLine($"Writing CR number to file: {arguments.OutputCrNumberFile}");
                     File.WriteAllText(arguments.OutputCrNumberFile, crNumber);
                 }
+
+                var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
+                var aikidoIssues = aikidoLogic.GetIssuesForRepo(build.Repository.Name);
+                
             }
         }
 

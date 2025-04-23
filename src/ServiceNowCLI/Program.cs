@@ -77,6 +77,16 @@ namespace ServiceNowCLI
             return settings;
         }
 
+        private static AikidoSettings GetAikidoSettings()
+        {
+            return new AikidoSettings()
+            {
+                BaseUrl = ConfigurationManager.AppSettings["AikidoBaseUrl"],
+                ClientId = ConfigurationManager.AppSettings["AikidoClientId"],
+                ClientSecret = ConfigurationManager.AppSettings["AikidoClientSecret"]
+            };
+        }
+
         private static ServiceNowSettings GetServiceNowSettings()
         {
             return new ServiceNowSettings()
@@ -109,30 +119,32 @@ namespace ServiceNowCLI
         private static object RunActivityFailedAndReturnExitCode(
             ActivityFailedOptions opts)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings();
-
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
+            var crLogic = CreateChangeRequestLogic();
             return crLogic.CompleteActivity(opts, false);
         }
 
         private static object RunActivitySuccessAndReturnExitCode(
             ActivitySuccessOptions opts)
         {
+            ChangeRequestLogic crLogic = CreateChangeRequestLogic();
+            return crLogic.CompleteActivity(opts, true);
+        }
+
+        private static ChangeRequestLogic CreateChangeRequestLogic()
+        {
             var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
             var snSettings = GetServiceNowSettings();
+            var aikidoSettings = GetAikidoSettings();
 
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
-            return crLogic.CompleteActivity(opts, true);
+            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory, aikidoSettings);
+            return crLogic;
         }
 
         public static object RunCreateChangeRequestAndReturnExitCode(
             CreateCrOptions arguments)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings();
+            var crLogic = CreateChangeRequestLogic();
 
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             arguments.ExistingCr = arguments.ExistingCr.Replace("'", string.Empty);
             crLogic.CreateChangeRequest(arguments);
             return 0;
@@ -156,10 +168,8 @@ namespace ServiceNowCLI
 
         private static object RunCancelChangeRequestNum(CancelCrsOptions opts)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings();
+            var crLogic = CreateChangeRequestLogic();
 
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             crLogic.CancelCrs(opts);
 
             return 0;
