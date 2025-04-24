@@ -1,8 +1,7 @@
-﻿using System;
+﻿using ServiceNowCLI.Core.Aikido.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceNowCLI.Core.Aikido
 {
@@ -16,11 +15,11 @@ namespace ServiceNowCLI.Core.Aikido
             _apiClient.Authenticate(clientId, clientSecret);
         }
 
-        public string GetIssuesForRepo(string repoName)
+        public List<Issue> GetIssuesForRepo(string repoName)
         {
             var repoId = GetRepoId(repoName);
-            var issuesJson = _apiClient.ExportIssuesJson(filterCodeRepoId: repoId);
-            return issuesJson;
+            var issues = _apiClient.ExportIssuesJson(filterCodeRepoId: repoId);
+            return issues;
         }
 
         private int GetRepoId(string repoName)

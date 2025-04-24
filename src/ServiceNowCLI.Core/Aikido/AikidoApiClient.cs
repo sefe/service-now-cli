@@ -60,7 +60,7 @@ namespace ServiceNowCLI.Core.Aikido
             return response.Data;
         }
 
-        public string ExportIssuesJson(
+        public List<Issue> ExportIssuesJson(
             string filterStatus = null,
             int? filterTeamId = null,
             int? filterIssueGroupId = null,
@@ -98,14 +98,14 @@ namespace ServiceNowCLI.Core.Aikido
             if (!string.IsNullOrEmpty(filterSeverities))
                 request.AddQueryParameter("filter_severities", filterSeverities);
 
-            var response = _client.Execute(request);
+            var response = _client.Execute<List<Issue>>(request);
 
             if (!response.IsSuccessful)
             {
                 throw new Exception($"Failed to export issues: {response.StatusCode} - {response.ErrorMessage}");
             }
 
-            return response.Content;
+            return response.Data;
         }
 
         /// <summary>

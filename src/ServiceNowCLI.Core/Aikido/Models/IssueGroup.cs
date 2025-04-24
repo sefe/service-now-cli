@@ -9,10 +9,10 @@ namespace ServiceNowCLI.Core.Aikido.Models
         public string Title { get; set; }
         public string Description { get; set; } // Can be null
         public string Type { get; set; } // Enum could be used for predefined values
-        public int SeverityScore { get; set; }
+        public int Severity_Score { get; set; }
         public string Severity { get; set; } // Enum could be used for predefined values
-        public string GroupStatus { get; set; } // Enum could be used for predefined values
-        public int TimeToFixMinutes { get; set; }
+        public string Group_Status { get; set; } // Enum could be used for predefined values
+        public int Time_To_Fix_Minutes { get; set; }
         public List<Location> Locations { get; set; } // A list of location objects
     }
 

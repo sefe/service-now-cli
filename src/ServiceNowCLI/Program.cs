@@ -1,7 +1,9 @@
 using CommandLine;
+using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using ServiceNowCLI.Config;
 using ServiceNowCLI.Config.Dtos;
+using ServiceNowCLI.Core.Aikido;
 using ServiceNowCLI.Core.Arguments;
 using ServiceNowCLI.Core.AzureDevOps;
 using System;
@@ -51,18 +53,33 @@ namespace ServiceNowCLI
 
             Console.WriteLine($"Starting ServiceNowCLI - command line arguments: {JsonConvert.SerializeObject(args)}");
 
-            Parser.Default.ParseArguments<CreateCrOptions, ActivitySuccessOptions, ActivityFailedOptions, SetReleaseVariableOptions, CancelCrsOptions>(args)
+            Parser.Default.ParseArguments<CreateCrOptions, 
+                ActivitySuccessOptions, 
+                ActivityFailedOptions, 
+                SetReleaseVariableOptions, 
+                CancelCrsOptions, 
+                GenerateSastReportOptions>(args)
                 .MapResult(
                     (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts),
                     (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts),
                     (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts),
                     (SetReleaseVariableOptions opts) => RunSetReleasePipelineVariableValueAndReturnExitCode(opts),
                     (CancelCrsOptions opts) => RunCancelChangeRequestNum(opts),
+                    (GenerateSastReportOptions opts) => RunGenerateSastReport(opts),
                     errs => HandleArgumentParsingError(errs));
 
             activity.Stop();
 
             Console.WriteLine($"Finished - time taken = {activity.Duration:g}");
+        }
+
+        private static object RunGenerateSastReport(GenerateSastReportOptions opts)
+        {
+            var aikidoSettings = GetAikidoSettings();
+            var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
+            var aikidoIssues = aikidoLogic.GetIssuesForRepo(opts.RepoName);
+            ReportGenerator.GeneratePdfReport(opts.RepoName, aikidoIssues, opts.Filename ?? $"report_{opts.RepoName}_{DateTime.UtcNow.ToUnixEpochTime()}.pdf");
+            return 0;
         }
 
         private static AzureDevOpsSettings GetAzureDevOpsSettings()
