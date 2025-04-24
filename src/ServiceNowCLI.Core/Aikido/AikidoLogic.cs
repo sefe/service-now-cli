@@ -1,6 +1,7 @@
 ﻿using ServiceNowCLI.Core.Aikido.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace ServiceNowCLI.Core.Aikido
@@ -13,6 +14,18 @@ namespace ServiceNowCLI.Core.Aikido
         {
             _apiClient = new AikidoApiClient(baseUrl);
             _apiClient.Authenticate(clientId, clientSecret);
+        }
+
+        public void GenerateIssuesReport(string repoName, string filename)
+        {
+            var issues = GetIssuesForRepo(repoName);
+            ReportGenerator.GeneratePdfReport(repoName, issues, filename);
+        }
+
+        public void GenerateIssuesReport(string repoName, Stream stream)
+        {
+            var issues = GetIssuesForRepo(repoName);
+            ReportGenerator.GeneratePdfReport(repoName, issues, stream);
         }
 
         public List<Issue> GetIssuesForRepo(string repoName)

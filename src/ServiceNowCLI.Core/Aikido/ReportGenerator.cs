@@ -4,19 +4,34 @@ using System.Collections.Generic;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.IO;
 
 namespace ServiceNowCLI.Core.Aikido
 {
-    public static class ReportGenerator
+    internal static class ReportGenerator
     {
         public static void GeneratePdfReport(string repoName, List<Issue> issues, string filePath)
         {
+            var document = GeneratePdfReport(repoName, issues);
+            document.GeneratePdf(filePath);
+            Console.WriteLine($"PDF report generated: {filePath}");
+        }
+
+        public static void GeneratePdfReport(string repoName, List<Issue> issues, Stream stream)
+        {
+            var document = GeneratePdfReport(repoName, issues);
+            document.GeneratePdf(stream);
+            Console.WriteLine($"PDF report generated in stream.");
+        }
+
+        private static Document GeneratePdfReport(string repoName, List<Issue> issues)
+        {
             QuestPDF.Settings.License = LicenseType.Community;
-            Document.Create(container =>
+            return Document.Create(container =>
             {
                 container.Page(page =>
                 {
-                    page.Size(new PageSize(842, 595));
+                    page.Size(new PageSize(842, 595)); // A4 landscape
                     page.Margin(1, Unit.Centimetre);
                     page.PageColor(Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Inter"));
@@ -65,10 +80,7 @@ namespace ServiceNowCLI.Core.Aikido
                         }
                     });
                 });
-            })
-            .GeneratePdf(filePath);
-
-            Console.WriteLine($"PDF report generated: {filePath}");
+            });
         }
 
         private static void CreateSeverityCell(RowDescriptor row, string severity)

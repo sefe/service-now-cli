@@ -7,6 +7,9 @@ using ServiceNowCLI.Config.Dtos;
 using ServiceNowCLI.Core.Extensions;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http.Headers;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -37,7 +40,7 @@ namespace ServiceNowCLI.Core.ServiceNow
             configurations = CrFlowConfiguration.GetDefault();
         }
 
-        public string CreateCR(ISnCreateChangeRequestModel cr)
+        public SnChangeRequestResponseModel CreateCR(ISnCreateChangeRequestModel cr)
         {
             var restRequest = new RestRequest(crUri);
             restRequest.AddJsonBody(cr);
@@ -51,7 +54,7 @@ namespace ServiceNowCLI.Core.ServiceNow
                 {
                     UpdateCRStateFromTo(res.result.sys_id, res.result.type.ToEnum<CrTypes>(), state, configurations[type].DesiredStateAfterCreation);
                 }
-                return res.result.number;
+                return res.result;
             }
 
             throw new ArgumentException($"CR creation failed with code {response.StatusCode}, content: {response.Content}");
@@ -136,6 +139,49 @@ namespace ServiceNowCLI.Core.ServiceNow
             }
 
             return false;
+        }
+
+        public bool AttachFileToCr(string sysId, Stream stream, string filename)
+        {
+            try
+            {
+                if (!stream.CanRead)
+                    throw new InvalidOperationException("Stream is not readable");
+
+                if (stream.CanSeek && stream.Position > 0)
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                var attachRequest = new RestRequest($"/attachment/file?table_name=change_request&table_sys_id={sysId}&file_name={filename}",
+                    Method.Post);
+
+                string fileContentType = "application/pdf";
+                attachRequest.AddFile(
+                    name: "uploadFile",
+                    getFile: () => stream,
+                    fileName: filename,
+                    contentType: fileContentType
+                );
+
+                attachRequest.AddHeader("Accept", "application/json");
+
+                var response = _client.Execute(attachRequest);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"File '{filename}' successfully attached to CR with sysId: {sysId}");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to attach file to CR. Status: {response.StatusCode}. Response: {response.Content}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while attaching file: {ex.Message}");
+                return false;
+            }
         }
 
         private bool SetCrStateWithBody(string sysId, CrStates newState, SnChangeRequestModel body)

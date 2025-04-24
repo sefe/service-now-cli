@@ -25,40 +25,15 @@ namespace ServiceNowCLI.Core.AzureDevOps
         public object CompleteActivity(SetActivityOptions opts, bool successfully)
         {
             var successName = successfully ? "Succeeded" : "Failed";
-            string note = !string.IsNullOrEmpty(opts.CloseNote) ? $" with note: {opts.CloseNote}" : "";
 
-            Console.WriteLine($"Closing CR {opts.ChangeNo} as {successName}{note}...");
-
-            var client = new ServiceNowHttpClient(snSettings, tokenHandler.GetToken());
-
-            var isCompleted = client.CompleteCR(opts.ChangeNo, successfully, opts.CloseNote);
-            
-            if (isCompleted)
-            {
-                Console.WriteLine($"Closing CR {opts.ChangeNo} as {successName} has been finished.");
-            }
-            else
-            {
-                return -1;
-            }
-
-            return 0;
+            var snLogic = new ServiceNowLogic(snSettings, tokenHandler.GetToken());
+            return snLogic.CompleteCR(opts.ChangeNo, successfully, opts.CloseNote);
         }
 
         public void CancelCrs(CancelCrsOptions opts)
         {
-            var nums = opts.ChangeNums.Split(',').Select(p => p.Trim()).Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
-            var client = new ServiceNowHttpClient(snSettings, tokenHandler.GetToken());
-
-            foreach (var number in nums)
-            {
-                var isOk = client.CancelCRByNumber(number);
-
-                if (isOk)
-                {
-                    Console.WriteLine($"CR {number} has been cancelled.");
-                }
-             }
+            var snLogic = new ServiceNowLogic(snSettings, tokenHandler.GetToken());
+            snLogic.CancelCrs(opts.ChangeNums);
         }
 
         private void CreateNewChangeRequest(CreateCrOptions arguments)
@@ -94,8 +69,9 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var changeDescriptions = changeDescriptionGenerator.GenerateChangeDescription(workItems);
 
             var changeRequest = CreateChangeRequest(crInputs, arguments, changeDescriptions);
+            var serviceNowLogic = new ServiceNowLogic(snSettings, tokenHandler.GetToken());
 
-            var crNumber = CallServiceNowToCreateChangeRequest(changeRequest);
+            var crNumber = serviceNowLogic.CreateChangeRequest(changeRequest);
 
             if (!string.IsNullOrEmpty(crNumber))
             {
@@ -122,8 +98,11 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 }
 
                 var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
-                var aikidoIssues = aikidoLogic.GetIssuesForRepo(build.Repository.Name);
-                
+                using (var memoryStream = new MemoryStream())
+                {
+                    aikidoLogic.GenerateIssuesReport(build.Repository.Name, memoryStream);
+                    serviceNowLogic.AttachFileToCreatedCr(crNumber, memoryStream, $"security_report.pdf");
+                }
             }
         }
 
@@ -284,7 +263,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
         }
 
         private void AddCrNumberTagToPbis(
-            List<Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models.WorkItem> workItems, 
+            List<WorkItem> workItems, 
             WorkItemLogic workItemLogic,
             string newTag)
         {
@@ -293,24 +272,6 @@ namespace ServiceNowCLI.Core.AzureDevOps
             foreach (var workItem in workItems)
             {
                 workItemLogic.AddTagToWorkItem(workItem, newTag);
-            }
-        }
-
-        private string CallServiceNowToCreateChangeRequest(ChangeRequestModel changeRequest)
-        {
-            Console.WriteLine($"Submitting CR: {JsonConvert.SerializeObject(changeRequest, Formatting.Indented)}");
-            try
-            {
-                var httpClient = new ServiceNowHttpClient(snSettings, tokenHandler.GetToken());
-                var crNumber = httpClient.CreateCR(changeRequest);
-
-                return crNumber;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"CR creation failed: {ex.Message}");
-
-                throw;
             }
         }
 

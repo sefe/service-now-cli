@@ -3,11 +3,10 @@ using ServiceNowCLI.Core.Aikido.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace ServiceNowCLI.Core.Aikido
 {
-    public class AikidoApiClient
+    internal class AikidoApiClient
     {
         private readonly string _apiPrefix;
         private readonly RestClient _client;
