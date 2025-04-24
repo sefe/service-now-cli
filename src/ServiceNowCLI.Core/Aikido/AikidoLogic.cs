@@ -16,21 +16,34 @@ namespace ServiceNowCLI.Core.Aikido
             _apiClient.Authenticate(clientId, clientSecret);
         }
 
-        public void GenerateIssuesReport(string repoName, string filename)
+        public bool GenerateIssuesReport(string repoName, string filename)
         {
             var issues = GetIssuesForRepo(repoName);
+            if (issues == null)
+                return false;
+
             ReportGenerator.GeneratePdfReport(repoName, issues, filename);
+            return true;
         }
 
-        public void GenerateIssuesReport(string repoName, Stream stream)
+        public bool GenerateIssuesReport(string repoName, Stream stream)
         {
             var issues = GetIssuesForRepo(repoName);
+            if (issues == null)
+                return false;
+
             ReportGenerator.GeneratePdfReport(repoName, issues, stream);
+            return true;
         }
 
         public List<Issue> GetIssuesForRepo(string repoName)
         {
             var repoId = GetRepoId(repoName);
+            if (repoId == 0)
+            {
+                Console.WriteLine($"Repository '{repoName}' not found in Aikido. No issues to report.");
+                return null;
+            }
             var issues = _apiClient.ExportIssuesJson(filterCodeRepoId: repoId);
             return issues;
         }
