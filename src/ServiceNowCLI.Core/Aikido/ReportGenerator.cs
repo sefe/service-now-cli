@@ -10,21 +10,21 @@ namespace ServiceNowCLI.Core.Aikido
 {
     internal static class ReportGenerator
     {
-        public static void GeneratePdfReport(string repoName, List<Issue> issues, string filePath)
+        public static void GeneratePdfReport(string repoName, List<Issue> issues, string filePath, string linkToIssues)
         {
-            var document = GeneratePdfReport(repoName, issues);
+            var document = GeneratePdfReport(repoName, issues, linkToIssues);
             document.GeneratePdf(filePath);
             Console.WriteLine($"PDF report generated: {filePath}");
         }
 
-        public static void GeneratePdfReport(string repoName, List<Issue> issues, Stream stream)
+        public static void GeneratePdfReport(string repoName, List<Issue> issues, Stream stream, string linkToIssues)
         {
-            var document = GeneratePdfReport(repoName, issues);
+            var document = GeneratePdfReport(repoName, issues, linkToIssues);
             document.GeneratePdf(stream);
             Console.WriteLine($"PDF report generated in stream.");
         }
 
-        private static Document GeneratePdfReport(string repoName, List<Issue> issues)
+        private static Document GeneratePdfReport(string repoName, List<Issue> issues, string linkToIssues)
         {
             QuestPDF.Settings.License = LicenseType.Community;
             return Document.Create(container =>
@@ -39,11 +39,17 @@ namespace ServiceNowCLI.Core.Aikido
                     // Header Section
                     page.Header().Column(header =>
                     {
-                        header.Item().Text($"Security Audit Report for {repoName}")
-                            .FontSize(16)
-                            .SemiBold()
-                            .FontColor(Colors.Black)
-                            .AlignCenter();
+                        header.Item().AlignCenter().Text(text =>
+                        {
+                            text.Span("Security Audit Report for ")
+                                .FontSize(16)
+                                .SemiBold()
+                                .FontColor(Colors.Black);
+                            text.Hyperlink(repoName, linkToIssues)
+                                .FontSize(16)
+                                .SemiBold()
+                                .FontColor(Colors.Indigo.Darken1);
+                        });
 
                         header.Item().Text($"Created on {DateTime.Now:dd MMMM yyyy @ HH:mm}")
                             .FontSize(10)

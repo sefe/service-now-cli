@@ -10,12 +10,17 @@ namespace ServiceNowCLI.Core.Aikido
     {
         private readonly string _apiPrefix;
         private readonly RestClient _client;
+        private readonly string _baseUrl;
         private string _accessToken;
+
+        public string BaseUrl => _baseUrl;
+        public string LinkToIssues(int repoId) => $"{_baseUrl}/repositories/{repoId}";
 
         public AikidoApiClient(string baseUrl)
         {
             _apiPrefix = "/api/public/v1/";
             _client = new RestClient(baseUrl);
+            _baseUrl = baseUrl;
         }
 
         /// <summary>

@@ -18,32 +18,32 @@ namespace ServiceNowCLI.Core.Aikido
 
         public bool GenerateIssuesReport(string repoName, string filename, string issuePathFilter = null)
         {
-            var issues = GetIssuesForRepo(repoName, issuePathFilter);
+            var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter);
             if (issues == null)
                 return false;
-
-            ReportGenerator.GeneratePdfReport(repoName, issues, filename);
+            ReportGenerator.GeneratePdfReport(repoName, issues, filename, _apiClient.LinkToIssues(repoId));
             return true;
         }
 
         public bool GenerateIssuesReport(string repoName, Stream stream, string issuePathFilter = null)
         {
-            var issues = GetIssuesForRepo(repoName, issuePathFilter);
+            var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter);
             if (issues == null)
                 return false;
 
-            ReportGenerator.GeneratePdfReport(repoName, issues, stream);
+            ReportGenerator.GeneratePdfReport(repoName, issues, stream, _apiClient.LinkToIssues(repoId));
             return true;
         }
 
-        public List<Issue> GetIssuesForRepo(string repoName, string pathFilter = null)
+        public List<Issue> GetIssuesForRepo(string repoName, out int repoId, string pathFilter = null)
         {
-            var repoId = GetRepoId(repoName);
+            repoId = GetRepoId(repoName);
             if (repoId == 0)
             {
                 Console.WriteLine($"Repository '{repoName}' not found in Aikido. No issues to report.");
                 return null;
             }
+
             var issues = _apiClient.ExportIssuesJson(filterCodeRepoId: repoId);
             if (!string.IsNullOrWhiteSpace(pathFilter))
             {
