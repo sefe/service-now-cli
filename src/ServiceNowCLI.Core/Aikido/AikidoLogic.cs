@@ -52,7 +52,7 @@ namespace ServiceNowCLI.Core.Aikido
                     ).ToList();
             }
 
-            return issues;
+            return issues.Where(iss => iss.status == IssueStatuses.Open).ToList();
         }
 
         private int GetRepoId(string repoName)

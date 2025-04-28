@@ -39,4 +39,12 @@ namespace ServiceNowCLI.Core.Aikido.Models
         public DateTime? ClosedAtDate => closed_at.HasValue ? DateTimeOffset.FromUnixTimeSeconds(closed_at.Value).DateTime : null;
         public DateTime? SnoozeUntilDate => snooze_until.HasValue ? DateTimeOffset.FromUnixTimeSeconds(snooze_until.Value).DateTime : null;
     }
+
+    public static class IssueStatuses
+    {
+        public static string Open = "open";
+        public static string Ignored = "ignored";
+        public static string Snoozed = "snoozed";
+        public static string Closed = "closed";
+    }
 }
