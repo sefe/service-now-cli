@@ -16,9 +16,9 @@ namespace ServiceNowCLI.Core.Aikido
             _apiClient.Authenticate(clientId, clientSecret);
         }
 
-        public bool GenerateIssuesReport(string repoName, string filename)
+        public bool GenerateIssuesReport(string repoName, string filename, string issuePathFilter = null)
         {
-            var issues = GetIssuesForRepo(repoName);
+            var issues = GetIssuesForRepo(repoName, issuePathFilter);
             if (issues == null)
                 return false;
 
@@ -26,9 +26,9 @@ namespace ServiceNowCLI.Core.Aikido
             return true;
         }
 
-        public bool GenerateIssuesReport(string repoName, Stream stream)
+        public bool GenerateIssuesReport(string repoName, Stream stream, string issuePathFilter = null)
         {
-            var issues = GetIssuesForRepo(repoName);
+            var issues = GetIssuesForRepo(repoName, issuePathFilter);
             if (issues == null)
                 return false;
 
@@ -36,7 +36,7 @@ namespace ServiceNowCLI.Core.Aikido
             return true;
         }
 
-        public List<Issue> GetIssuesForRepo(string repoName)
+        public List<Issue> GetIssuesForRepo(string repoName, string pathFilter = null)
         {
             var repoId = GetRepoId(repoName);
             if (repoId == 0)
@@ -45,6 +45,13 @@ namespace ServiceNowCLI.Core.Aikido
                 return null;
             }
             var issues = _apiClient.ExportIssuesJson(filterCodeRepoId: repoId);
+            if (!string.IsNullOrWhiteSpace(pathFilter))
+            {
+                issues = issues.Where(issue =>
+                        string.IsNullOrEmpty(issue.affected_file) || issue.affected_file.StartsWith(pathFilter, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+            }
+
             return issues;
         }
 

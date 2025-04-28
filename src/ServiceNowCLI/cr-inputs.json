@@ -3,6 +3,7 @@
   "ScheduledEndDate": "in 1 hour",
   "BranchingStrategy": "GitHubFlow",
   "TeamProjectName": "AzureDevOpsProjectName",
+  "IssuePathFilter": null,
 
   "assignment_group": "TribeName",
   "chg_model": "Standard",
@@ -19,5 +20,5 @@
   "correlation_id": "",
   "impact": "",
   "priority": "",
-  "urgency":  ""
+  "urgency": ""
 }

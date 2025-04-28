@@ -71,7 +71,11 @@ namespace ServiceNowCLI.Core.Aikido
                             content.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(1, Unit.Millimetre).Row(row =>
                             {
                                 row.RelativeItem(1).Text(issue.type);
-                                row.RelativeItem(2).Text(issue.rule);
+                                row.RelativeItem(2).Text(text =>
+                                {
+                                    text.Line($"{issue.id}").FontSize(8).FontColor(Colors.Grey.Medium);
+                                    text.Line(issue.rule);
+                                });
                                 CreateSeverityCell(row, issue.severity);
                                 row.RelativeItem(2).Text(issue.affected_package ?? "");
                                 row.RelativeItem(4).Text(issue.affected_file ?? "");

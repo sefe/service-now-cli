@@ -100,7 +100,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
                 using (var memoryStream = new MemoryStream())
                 {
-                    if (aikidoLogic.GenerateIssuesReport(build.Repository.Name, memoryStream))
+                    if (aikidoLogic.GenerateIssuesReport(build.Repository.Name, memoryStream, crInputs.IssuePathFilter))
                         serviceNowLogic.AttachFileToCreatedCr(crNumber, memoryStream, $"security_report.pdf");
                 }
             }

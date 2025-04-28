@@ -23,6 +23,7 @@
         public string ScheduledEndDate { get; set; }
         public BranchingStrategies BranchingStrategy { get; set; }
         public string TeamProjectName { get; set; }
+        public string IssuePathFilter { get; set; }
 
         #region ServiceNow fields
         public string assignment_group { get; set; }

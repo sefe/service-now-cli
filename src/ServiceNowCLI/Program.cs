@@ -77,7 +77,7 @@ namespace ServiceNowCLI
         {
             var aikidoSettings = GetAikidoSettings();
             var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
-            aikidoLogic.GenerateIssuesReport(opts.RepoName, opts.Filename ?? $"security_report_{opts.RepoName}_{DateTime.UtcNow.ToUnixEpochTime()}.pdf");
+            aikidoLogic.GenerateIssuesReport(opts.RepoName, opts.Filename ?? $"security_report_{opts.RepoName}_{DateTime.UtcNow.ToUnixEpochTime()}.pdf", opts.IssuesPathFilter);
             
             return 0;
         }

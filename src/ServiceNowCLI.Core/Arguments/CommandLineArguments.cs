@@ -90,5 +90,8 @@ namespace ServiceNowCLI.Core.Arguments
 
         [Option('f', "filename", Required = false, HelpText = "Report filename")]
         public string Filename { get; set; }
+
+        [Option('p', "pathfilter", Required = false, HelpText = "Issues repo path filter")]
+        public string IssuesPathFilter { get; set; }
     }
 }
