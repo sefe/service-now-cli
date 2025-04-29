@@ -25,7 +25,7 @@ stages:
               displayName: 'Copy to Common Folder'
               inputs:
                 SourceFolder: '${{ parameters.buildFolder }}\$(Build.BuildNumber)\drop\src\ServiceNowCLI\bin\$(BuildConfiguration)\net8.0-windows\'
-                Contents: '*.*'
+                Contents: '**'
                 TargetFolder: '${{parameters.deployFolder}}\${{ parameters.environment }}'
                 CleanTargetFolder: true
                 OverWrite: true
