@@ -60,19 +60,6 @@ stages:
 
       - task: SonarQubeAnalyze@5
 
-      - task: SynopsysDetectTask@9
-        inputs:
-          BlackDuckService: 'BlackDuck'
-          DetectArguments: |
-            --detect.project.name="$(projectKey)"
-            --detect.project.version.name="$(projectKey)-$(Build.SourceBranchName)"
-            --detect.source.path=$(Build.SourcesDirectory)
-            --detect.tools.excluded=SIGNATURE_SCAN
-            --detect.detector.search.depth=5
-          DetectVersion: 'latest'
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))
-
-
       - task: CopyFiles@2
         displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
         inputs:
