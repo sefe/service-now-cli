@@ -45,8 +45,11 @@ namespace ServiceNowCLI.Core.Aikido
             }
 
             var issues = _apiClient.ExportIssuesJson(filterCodeRepoId: repoId);
+            Console.WriteLine($"Found {issues.Count} security issues for repository '{repoName}'.");
+
             if (!string.IsNullOrWhiteSpace(pathFilter))
             {
+                Console.WriteLine($"filtering issues by path '{pathFilter}'..");
                 issues = issues.Where(issue =>
                         string.IsNullOrEmpty(issue.affected_file) || issue.affected_file.StartsWith(pathFilter, StringComparison.OrdinalIgnoreCase)
                     ).ToList();
