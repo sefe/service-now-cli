@@ -82,8 +82,8 @@ namespace ServiceNowCLI.Core.Arguments
         public string VariableValue { get; set; }
     }
 
-    [Verb("generatesastreport", HelpText = "Read data and generate report from SAST.")]
-    public class GenerateSastReportOptions
+    [Verb("generatesecurityreport", HelpText = "Read data and generate security report from SAST tool.")]
+    public class GenerateSecurityReportOptions
     {
         [Option('r', "reponame", Required = true, HelpText = "Repository name for which to generate report.")]
         public string RepoName { get; set; }

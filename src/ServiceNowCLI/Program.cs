@@ -57,15 +57,15 @@ namespace ServiceNowCLI
                 ActivitySuccessOptions, 
                 ActivityFailedOptions, 
                 SetReleaseVariableOptions, 
-                CancelCrsOptions, 
-                GenerateSastReportOptions>(args)
+                CancelCrsOptions,
+                GenerateSecurityReportOptions>(args)
                 .MapResult(
                     (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts),
                     (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts),
                     (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts),
                     (SetReleaseVariableOptions opts) => RunSetReleasePipelineVariableValueAndReturnExitCode(opts),
                     (CancelCrsOptions opts) => RunCancelChangeRequestNum(opts),
-                    (GenerateSastReportOptions opts) => RunGenerateSastReport(opts),
+                    (GenerateSecurityReportOptions opts) => RunGenerateSastReport(opts),
                     errs => HandleArgumentParsingError(errs));
 
             activity.Stop();
@@ -73,7 +73,7 @@ namespace ServiceNowCLI
             Console.WriteLine($"Finished - time taken = {activity.Duration:g}");
         }
 
-        private static object RunGenerateSastReport(GenerateSastReportOptions opts)
+        private static object RunGenerateSastReport(GenerateSecurityReportOptions opts)
         {
             var aikidoSettings = GetAikidoSettings();
             var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
