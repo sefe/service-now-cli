@@ -81,4 +81,17 @@ namespace ServiceNowCLI.Core.Arguments
         [Option('v', "variablevalue", Required = false, HelpText = "Variable value'")]
         public string VariableValue { get; set; }
     }
+
+    [Verb("generatesecurityreport", HelpText = "Read data and generate security report from SAST tool.")]
+    public class GenerateSecurityReportOptions
+    {
+        [Option('r', "reponame", Required = true, HelpText = "Repository name for which to generate report.")]
+        public string RepoName { get; set; }
+
+        [Option('f', "filename", Required = false, HelpText = "Report filename")]
+        public string Filename { get; set; }
+
+        [Option('p', "pathfilter", Required = false, HelpText = "Issues repo path filter")]
+        public string IssuesPathFilter { get; set; }
+    }
 }

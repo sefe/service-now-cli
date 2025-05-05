@@ -1,7 +1,9 @@
 using CommandLine;
+using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using ServiceNowCLI.Config;
 using ServiceNowCLI.Config.Dtos;
+using ServiceNowCLI.Core.Aikido;
 using ServiceNowCLI.Core.Arguments;
 using ServiceNowCLI.Core.AzureDevOps;
 using System;
@@ -51,18 +53,33 @@ namespace ServiceNowCLI
 
             Console.WriteLine($"Starting ServiceNowCLI - command line arguments: {JsonConvert.SerializeObject(args)}");
 
-            Parser.Default.ParseArguments<CreateCrOptions, ActivitySuccessOptions, ActivityFailedOptions, SetReleaseVariableOptions, CancelCrsOptions>(args)
+            Parser.Default.ParseArguments<CreateCrOptions, 
+                ActivitySuccessOptions, 
+                ActivityFailedOptions, 
+                SetReleaseVariableOptions, 
+                CancelCrsOptions,
+                GenerateSecurityReportOptions>(args)
                 .MapResult(
                     (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts),
                     (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts),
                     (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts),
                     (SetReleaseVariableOptions opts) => RunSetReleasePipelineVariableValueAndReturnExitCode(opts),
                     (CancelCrsOptions opts) => RunCancelChangeRequestNum(opts),
+                    (GenerateSecurityReportOptions opts) => RunGenerateSastReport(opts),
                     errs => HandleArgumentParsingError(errs));
 
             activity.Stop();
 
             Console.WriteLine($"Finished - time taken = {activity.Duration:g}");
+        }
+
+        private static object RunGenerateSastReport(GenerateSecurityReportOptions opts)
+        {
+            var aikidoSettings = GetAikidoSettings();
+            var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
+            aikidoLogic.GenerateIssuesReport(opts.RepoName, opts.Filename ?? $"security_report_{opts.RepoName}_{DateTime.UtcNow.ToUnixEpochTime()}.pdf", opts.IssuesPathFilter);
+            
+            return 0;
         }
 
         private static AzureDevOpsSettings GetAzureDevOpsSettings()
@@ -75,6 +92,16 @@ namespace ServiceNowCLI
             var settings = azureDevOpsSettingsBuilder.GetSettings();
 
             return settings;
+        }
+
+        private static AikidoSettings GetAikidoSettings()
+        {
+            return new AikidoSettings()
+            {
+                BaseUrl = ConfigurationManager.AppSettings["AikidoBaseUrl"],
+                ClientId = ConfigurationManager.AppSettings["AikidoClientId"],
+                ClientSecret = ConfigurationManager.AppSettings["AikidoClientSecret"]
+            };
         }
 
         private static ServiceNowSettings GetServiceNowSettings()
@@ -109,30 +136,32 @@ namespace ServiceNowCLI
         private static object RunActivityFailedAndReturnExitCode(
             ActivityFailedOptions opts)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings();
-
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
+            var crLogic = CreateChangeRequestLogic();
             return crLogic.CompleteActivity(opts, false);
         }
 
         private static object RunActivitySuccessAndReturnExitCode(
             ActivitySuccessOptions opts)
         {
+            ChangeRequestLogic crLogic = CreateChangeRequestLogic();
+            return crLogic.CompleteActivity(opts, true);
+        }
+
+        private static ChangeRequestLogic CreateChangeRequestLogic()
+        {
             var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
             var snSettings = GetServiceNowSettings();
+            var aikidoSettings = GetAikidoSettings();
 
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
-            return crLogic.CompleteActivity(opts, true);
+            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory, aikidoSettings);
+            return crLogic;
         }
 
         public static object RunCreateChangeRequestAndReturnExitCode(
             CreateCrOptions arguments)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings();
+            var crLogic = CreateChangeRequestLogic();
 
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             arguments.ExistingCr = arguments.ExistingCr.Replace("'", string.Empty);
             crLogic.CreateChangeRequest(arguments);
             return 0;
@@ -156,10 +185,8 @@ namespace ServiceNowCLI
 
         private static object RunCancelChangeRequestNum(CancelCrsOptions opts)
         {
-            var (adoSettings, tokenHandler, vssConnectionFactory) = GetAdoObjects();
-            var snSettings = GetServiceNowSettings();
+            var crLogic = CreateChangeRequestLogic();
 
-            var crLogic = new ChangeRequestLogic(adoSettings, snSettings, tokenHandler, vssConnectionFactory);
             crLogic.CancelCrs(opts);
 
             return 0;
