@@ -40,8 +40,8 @@ namespace ServiceNowCLI.Core.Aikido
             repoId = GetRepoId(repoName);
             if (repoId == 0)
             {
-                Console.WriteLine($"Repository '{repoName}' not found in Aikido. No issues to report.");
-                return null;
+                Console.WriteLine($"No issues found for '{repoName}' in Aikido.");
+                return new List<Issue>();
             }
 
             var issues = _apiClient.ExportIssuesJson(filterCodeRepoId: repoId);
@@ -74,7 +74,7 @@ namespace ServiceNowCLI.Core.Aikido
                     // Check if there are any issue groups in the response
                     if (issueGroups == null || issueGroups.Count == 0)
                     {
-                        Console.WriteLine($"No more issue groups found. Repository '{repoName}' does not exist.");
+                        Console.WriteLine($"No issue groups found for repo {repoName}");
                         break;
                     }
 
@@ -95,18 +95,12 @@ namespace ServiceNowCLI.Core.Aikido
                     currentPage++;
                 }
 
-                // If we finished all pages and repoId is still 0, it means the repository was not found
-                if (repoId == 0)
-                {
-                    Console.WriteLine($"Repository '{repoName}' not found in the issue groups.");
-                }
-
                 return repoId;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
-                return 0;
+                throw;
             }
         }
     }

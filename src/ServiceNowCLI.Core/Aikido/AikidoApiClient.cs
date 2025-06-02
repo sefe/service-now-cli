@@ -1,4 +1,5 @@
-﻿using RestSharp;
+﻿using Newtonsoft.Json;
+using RestSharp;
 using ServiceNowCLI.Core.Aikido.Models;
 using System;
 using System.Collections.Generic;
@@ -147,14 +148,14 @@ namespace ServiceNowCLI.Core.Aikido
                 request.AddQueryParameter("filter_team_id", filterTeamId.Value.ToString());
 
             // Execute the request
-            var response = _client.Execute<List<IssueGroup>>(request);
+            var response = _client.Execute(request);
 
             if (!response.IsSuccessful)
             {
-                throw new Exception($"Failed to fetch issue groups: {response.StatusCode} - {response.ErrorMessage}");
+                throw new Exception($"Failed to fetch issue groups: {response.StatusCode} - {response.ErrorMessage}, {response.Content}");
             }
 
-            return response.Data;
+            return JsonConvert.DeserializeObject<List<IssueGroup>>(response.Content);
         }
 
         /// <summary>
