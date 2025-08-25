@@ -150,7 +150,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
         {
             if (!string.IsNullOrEmpty(arguments.ReleaseId))
             {
-                var buildFromReleaseId = GetBuildFromReleaseId(releaseLogic, buildLogic, arguments.ReleaseId);
+                var buildFromReleaseId = GetBuildFromReleaseId(releaseLogic, buildLogic, arguments);
 
                 if (buildFromReleaseId != null)
                 {
@@ -171,12 +171,13 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return buildFromBuildNumberInArguments;
         }
 
-        private Build GetBuildFromReleaseId(ReleaseLogic releaseLogic, BuildLogic buildLogic, string ReleaseId)
+        private Build GetBuildFromReleaseId(ReleaseLogic releaseLogic, BuildLogic buildLogic, CreateCrOptions arguments)
         {
+            var ReleaseId = arguments.ReleaseId;
             try
             {
                 Console.WriteLine($"Trying to get Build Id from Release Id {ReleaseId}");
-                var buildId = releaseLogic.GetBuildIdFromRelease(ReleaseId);
+                var buildId = releaseLogic.GetBuildIdFromRelease(ReleaseId, arguments.BuildNumber);
 
                 if (!string.IsNullOrEmpty(buildId))
                 {

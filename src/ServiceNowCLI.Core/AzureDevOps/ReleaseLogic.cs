@@ -69,19 +69,47 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return GetRelease(releaseClient);
         }
 
-        public string GetBuildIdFromRelease(string releaseId)
+        public string GetBuildIdFromRelease(string releaseId, string buildNumber)
         {
             var release = GetRelease(releaseId);
 
-            const string buildUriName = "buildUri";
+            var buildArtifacts = release.Artifacts.Where(x => x.Type == "Build").ToList();
 
-            var buildArtifact = release.Artifacts.FirstOrDefault(x => x.Type == "Build");
+            if (buildArtifacts.Count == 1)
+            {
+                var buildArtifact = buildArtifacts.First();
+                return extractBuildId(buildArtifact);
+            }
+            else if (buildArtifacts.Count > 1)
+            {
+                var allBuildDefinitions = string.Join(", ", buildArtifacts.Select(x => x.DefinitionReference["definition"].Name));
+                Console.WriteLine($"Multiple build artifacts found in the release with Id={releaseId}, will try to choose one from the next definitions: [{allBuildDefinitions}]");
 
-            if (buildArtifact == null)
+                // try to find the build with definition starts from same as the build number
+                var matchingBuildArtifacts = buildArtifacts.Where(x => buildNumber.StartsWith(x.DefinitionReference["definition"].Name, StringComparison.OrdinalIgnoreCase)).ToList();
+                var buildArtifact = matchingBuildArtifacts.FirstOrDefault();
+                if (buildArtifact != null)
+                {
+                    var buildId = extractBuildId(buildArtifact);
+                    Console.WriteLine($"Found build artifact: {buildArtifact.DefinitionReference["definition"].Name}, Id: {buildId}");
+
+                    return buildId;
+                }
+                else
+                {
+                    Console.WriteLine($"Could not find build artifact with definition matching start of build number among {buildArtifacts.Count} build artifacts, choosing the first one");
+                    return extractBuildId(buildArtifacts.First());
+                }
+            }
+            else
             {
                 return string.Empty;
             }
+        }
 
+        private static string extractBuildId(Artifact buildArtifact)
+        {
+            const string buildUriName = "buildUri";
             if (!buildArtifact.DefinitionReference.TryGetValue(buildUriName, out ArtifactSourceReference value))
             {
                 return string.Empty;
