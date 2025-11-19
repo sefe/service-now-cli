@@ -25,9 +25,9 @@ namespace ServiceNowCLI.Config
                 var dorcPropertyValue = JsonConvert.DeserializeObject<DorcPropertyValue[]>(responseContent);
                 return dorcPropertyValue[0].Value;
             }
-            catch
+            catch (Exception e)
             {
-                throw new ArgumentException($"Failed to get property from Dorc: Environment={dorcEnvironment}, PropertyName={dorcPropertyName}");
+                throw new ArgumentException($"Failed to get property from Dorc: Environment={dorcEnvironment}, PropertyName={dorcPropertyName}. Response status code: {response.StatusCode} body:{responseContent}, Error message: {e.Message}");
             }            
         }
     }
