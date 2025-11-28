@@ -12,8 +12,7 @@ namespace ServiceNowCLI.Core.Aikido
 
         public AikidoLogic(string baseUrl, string clientId, string clientSecret)
         {
-            _apiClient = new AikidoApiClient(baseUrl);
-            _apiClient.Authenticate(clientId, clientSecret);
+            _apiClient = new AikidoApiClient(baseUrl, clientId, clientSecret);
         }
 
         public bool GenerateIssuesReport(string repoName, string filename, string issuePathFilter = null)
@@ -27,12 +26,20 @@ namespace ServiceNowCLI.Core.Aikido
 
         public bool GenerateIssuesReport(string repoName, Stream stream, string issuePathFilter = null)
         {
-            var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter);
-            if (issues == null)
-                return false;
+            try
+            {
+                var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter);
+                if (issues == null)
+                    return false;
 
-            ReportGenerator.GeneratePdfReport(repoName, issues, stream, _apiClient.LinkToIssues(repoId));
-            return true;
+                ReportGenerator.GeneratePdfReport(repoName, issues, stream, _apiClient.LinkToIssues(repoId));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating issues report from Aikido: {ex.Message}");
+                return false;
+            }
         }
 
         public List<Issue> GetIssuesForRepo(string repoName, out int repoId, string pathFilter = null)

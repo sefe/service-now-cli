@@ -11,27 +11,37 @@ namespace ServiceNowCLI.Core.Aikido
     {
         private readonly string _apiPrefix;
         private readonly RestClient _client;
+        private readonly string _clientId;
+        private readonly string _clientSecret;
         private readonly string _baseUrl;
         private string _accessToken;
+        private DateTime _tokenExpires = DateTime.MinValue;
 
         public string BaseUrl => _baseUrl;
         public string LinkToIssues(int repoId) => $"{_baseUrl}/repositories/{repoId}";
 
-        public AikidoApiClient(string baseUrl)
+        public AikidoApiClient(string baseUrl, string clientId, string clientSecret)
         {
             _apiPrefix = "/api/public/v1/";
             _client = new RestClient(baseUrl);
+            _clientId = clientId;
+            _clientSecret = clientSecret;
             _baseUrl = baseUrl;
         }
 
         /// <summary>
         /// Authenticates using OAuth2 and retrieves the access token.
         /// </summary>
-        public void Authenticate(string clientId, string clientSecret)
+        private void Authenticate()
         {
+            if (_accessToken != null && DateTime.UtcNow < _tokenExpires)
+            {
+                return; // Token is still valid
+            }
+
             var request = new RestRequest("/api/oauth/token", Method.Post);
 
-            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
+            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
             request.AddHeader("accept", "application/json");
             request.AddHeader("authorization", $"Basic {credentials}");
 
@@ -41,11 +51,13 @@ namespace ServiceNowCLI.Core.Aikido
 
             if (!response.IsSuccessful || response.Data == null || string.IsNullOrEmpty(response.Data.access_token))
             {
-                throw new Exception($"Failed to retrieve access token: {response.StatusCode} - {response.ErrorMessage}");
+                throw new Exception($"Failed to retrieve access token from {_baseUrl}: {response.StatusCode} - {response.ErrorMessage}");
             }
 
             _accessToken = response.Data.access_token;
             _client.AddDefaultHeader("Authorization", $"Bearer {_accessToken}");
+            _tokenExpires = DateTime.UtcNow.AddSeconds(response.Data.expires_in - 3);
+
             Console.WriteLine("Successfully authenticated to Aikido.");
         }
 
@@ -54,6 +66,7 @@ namespace ServiceNowCLI.Core.Aikido
         /// </summary>
         public List<Issue> GetIssues()
         {
+            Authenticate();
             var request = new RestRequest($"{_apiPrefix}issues", Method.Get);
             var response = _client.Execute<List<Issue>>(request);
 
@@ -75,6 +88,7 @@ namespace ServiceNowCLI.Core.Aikido
             string filterIssueType = null,
             string filterSeverities = null)
         {
+            Authenticate();
             var request = new RestRequest($"{_apiPrefix}issues/export", Method.Get);
 
             request.AddQueryParameter("format", "json");
@@ -125,6 +139,7 @@ namespace ServiceNowCLI.Core.Aikido
             int? filterContainerRepoId = null,
             int? filterTeamId = null)
         {
+            Authenticate();
             var request = new RestRequest($"{_apiPrefix}open-issue-groups", Method.Get);
 
             // Add pagination parameters
@@ -163,6 +178,7 @@ namespace ServiceNowCLI.Core.Aikido
         /// </summary>
         public IssueGroup GetIssueGroupByIdAsync(int groupId)
         {
+            Authenticate();
             var request = new RestRequest($"{_apiPrefix}issue-groups/{groupId}", Method.Get);
             var response = _client.Execute<IssueGroup>(request);
 
