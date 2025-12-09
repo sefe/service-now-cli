@@ -1,7 +1,5 @@
-﻿using System;
-using System.Net.Http;
-using Newtonsoft.Json;
-using ServiceNowCLI.Config.Dtos;
+﻿using DOrc.API.Client;
+using System;
 
 namespace ServiceNowCLI.Config
 {
@@ -10,24 +8,30 @@ namespace ServiceNowCLI.Config
         string GetDorcPropertyValue(string dorcPropertyName);
     }
 
-    public class DorcConfigProvider(string dorcApiBaseUrl, string dorcEnvironment) : IDorcConfigProvider
+    public class DorcConfigProvider(string dorcApiBaseUrl, string dorcEnvironment, string dorcClientId, string dorcClientSecret) : IDorcConfigProvider
     {
         public string GetDorcPropertyValue(string dorcPropertyName)
         {
-            var httpClientHandler = new HttpClientHandler { UseDefaultCredentials = true };
+            string baseUrl = dorcApiBaseUrl ?? DorcApiConfiguration.DefaultBaseUrl;
 
-            var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(dorcApiBaseUrl) };
-
-            var response = httpClient.GetAsync($"PropertyValues?environmentName={dorcEnvironment}&propertyName={dorcPropertyName}").GetAwaiter().GetResult();
-            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             try
             {
-                var dorcPropertyValue = JsonConvert.DeserializeObject<DorcPropertyValue[]>(responseContent);
-                return dorcPropertyValue[0].Value;
+                var configuration = new DorcApiConfiguration()
+                {
+                    BaseUrl = baseUrl,
+                    ClientId = dorcClientId,
+                    ClientSecret = dorcClientSecret
+                };
+
+                var apiClient = new DorcApiClient(configuration);
+
+                var dorcPropertyValue = apiClient.GetPropertyValueAsync(dorcEnvironment, dorcPropertyName).GetAwaiter().GetResult();
+
+                return dorcPropertyValue;
             }
             catch (Exception e)
             {
-                throw new ArgumentException($"Failed to get property from Dorc: Environment={dorcEnvironment}, PropertyName={dorcPropertyName}. Response status code: {response.StatusCode} body:{responseContent}, Error message: {e.Message}");
+                throw new ArgumentException($"Failed to get property from Dorc: Environment={dorcEnvironment}, PropertyName={dorcPropertyName}. Response status code: Error message: {e.Message}");
             }            
         }
     }

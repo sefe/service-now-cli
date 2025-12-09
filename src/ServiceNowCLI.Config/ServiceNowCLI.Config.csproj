@@ -11,6 +11,7 @@
     <Copyright>Copyright © 2024</Copyright>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="DOrc.API.Client" Version="25.11.28.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
