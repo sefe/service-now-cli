@@ -86,7 +86,10 @@ namespace ServiceNowCLI
         {
             var dorcApiBaseUrl = ConfigurationManager.AppSettings["DorcApiBaseUrl"];
             var dorcEnvironment = ConfigurationManager.AppSettings["DorcEnvironment"];
-            var dorcConfigProvider = new DorcConfigProvider(dorcApiBaseUrl, dorcEnvironment);
+            var dorcClientId = ConfigurationManager.AppSettings["DorcClientId"];
+            var dorcClientSecret = ConfigurationManager.AppSettings["DorcClientSecret"];
+
+            var dorcConfigProvider = new DorcConfigProvider(dorcApiBaseUrl, dorcEnvironment, dorcClientId, dorcClientSecret);
             var azureDevOpsSettingsBuilder = new AzureDevOpsSettingsBuilder(dorcConfigProvider);
 
             var settings = azureDevOpsSettingsBuilder.GetSettings();
