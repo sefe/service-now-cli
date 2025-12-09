@@ -1,9 +1,5 @@
 ﻿using DOrc.API.Client;
-using DOrc.API.Client.Internal;
-using Newtonsoft.Json;
-using ServiceNowCLI.Config.Dtos;
 using System;
-using System.Net.Http;
 
 namespace ServiceNowCLI.Config
 {
