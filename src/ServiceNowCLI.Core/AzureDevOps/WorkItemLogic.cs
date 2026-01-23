@@ -33,20 +33,29 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return await _workItemTrackingHttpClient.GetWorkItemAsync(teamProjectName, workItemId, null, null, WorkItemExpand.All);
         }
 
-        public List<WorkItem> GetWorkItemsLinkedToBuild(List<ResourceRef> workItemReferencesFromBuild, Build build, CreateCrOptions arguments)
+        public List<WorkItem> GetWorkItems(List<int> workItemIds)
+        {
+            var workItems = _workItemTrackingHttpClient.GetWorkItemsBatchAsync(new WorkItemBatchGetRequest 
+            { 
+                Ids = workItemIds, 
+                Expand = WorkItemExpand.All
+            }).GetAwaiter().GetResult();
+
+            return workItems;
+        }
+
+        public List<WorkItem> FilterWorkitemsLinkedToBuild(List<WorkItem> workItems, Build build, CreateCrOptions arguments)
         {
             // If you start with a build and get linked work items, you often get additional work items that are not required
             // This takes the list of linked work items from the build, and then checks the work item to see if it is linked to the build
             // and it will then only return the subset of the work items that are linked to the build.
-            var workItems = new List<WorkItem>();
+            var validWorkItems = new List<WorkItem>();
 
             var buildUri = build.Uri;
 
-            foreach (var workItemReference in workItemReferencesFromBuild)
+            foreach (var workItem in workItems)
             {
-                var workItemId = int.Parse(workItemReference.Id);
-
-                var workItem = GetWorkItemAsync(workItemId).GetAwaiter().GetResult();
+                //var workItem = GetWorkItemAsync(workItemId).GetAwaiter().GetResult();
 
                 if (ShouldWorkItemBeIncluded(workItem, buildUri.ToString(), arguments))
                 {
@@ -54,10 +63,10 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 }
             }
 
-            var workItemsForConsole = string.Join(", ", workItems.Select(x => x.Id));
-            Console.WriteLine($"Found {workItems.Count} work items that are linked to BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
+            var workItemsForConsole = string.Join(", ", validWorkItems.Select(x => x.Id));
+            Console.WriteLine($"Found {validWorkItems.Count} work items that are linked to BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
 
-            return workItems;
+            return validWorkItems;
         }
 
         private bool ShouldWorkItemBeIncluded(WorkItem workItem, string buildUri, CreateCrOptions arguments)
@@ -67,7 +76,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 return true;
             }
 
-            var workItemRelations = workItem.Relations;
+            var workItemRelations = workItem.Relations ?? new List<WorkItemRelation>();
 
             foreach (var relation in workItemRelations)
             {

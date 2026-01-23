@@ -1,4 +1,5 @@
-﻿using Fluid;
+﻿using CommandLine;
+using Fluid;
 using Microsoft.Azure.Pipelines.WebApi;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
@@ -64,8 +65,17 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             ValidateBranchUsedForBuild(buildLogic, build, crInputs, isProd, pipeline.Configuration.Type == ConfigurationType.Yaml);
 
-            var buildLinkedWorkItemReferences = buildLogic.GetBuildLinkedWorkItems(build);
-            var workItems = workItemLogic.GetWorkItemsLinkedToBuild(buildLinkedWorkItemReferences, build, arguments);
+            var buildLinkedWorkItemIds = buildLogic.GetBuildLinkedWorkItemIds(build);
+            var addWorkitemsIds = arguments.GetAddWorkitemIds();
+            if (addWorkitemsIds.Count > 0)
+            {
+                Console.WriteLine($"Checking additional {addWorkitemsIds.Count} work items specified in arguments");
+            }
+
+            var addWorkitems = workItemLogic.GetWorkItems(buildLinkedWorkItemIds.Concat(addWorkitemsIds).ToList());
+
+            var workItems = workItemLogic.FilterWorkitemsLinkedToBuild(addWorkitems, build, arguments);
+
             var changeDescriptions = changeDescriptionGenerator.GenerateChangeDescription(workItems);
 
             var changeRequest = CreateChangeRequest(crInputs, arguments, changeDescriptions);

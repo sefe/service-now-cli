@@ -1,4 +1,6 @@
 ﻿using CommandLine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceNowCLI.Core.Arguments
 {
@@ -36,6 +38,20 @@ namespace ServiceNowCLI.Core.Arguments
         public string TransformTemplateFile { get; set; }
 
         public bool IncludeAllLinkedWorkItems => WorkItemLinking == "All";
+
+        [Option('a', "addWorkitems", Required = false, Default = "", HelpText = "Comma-separated list of work item IDs to add to the CR (e.g., 123,456,789)")]
+        public string AddWorkitems { get; set; }
+
+        public List<int> GetAddWorkitemIds()
+        {
+            if (string.IsNullOrWhiteSpace(AddWorkitems))
+            {
+                return new List<int>();
+            }
+
+            return AddWorkitems.Split(',', System.StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => int.Parse(x.Trim())).ToList();
+        }
     }
 
     public class SetActivityOptions
