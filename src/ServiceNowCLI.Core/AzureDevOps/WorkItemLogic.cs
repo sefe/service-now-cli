@@ -55,11 +55,9 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             foreach (var workItem in workItems)
             {
-                //var workItem = GetWorkItemAsync(workItemId).GetAwaiter().GetResult();
-
                 if (ShouldWorkItemBeIncluded(workItem, buildUri.ToString(), arguments))
                 {
-                    workItems.Add(workItem);
+                    validWorkItems.Add(workItem);
                 }
             }
 
