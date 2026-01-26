@@ -64,6 +64,10 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var workItemsForConsole = string.Join(", ", validWorkItems.Select(x => x.Id));
             Console.WriteLine($"Found {validWorkItems.Count} work items that are linked to BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
 
+            if (validWorkItems.Count == 0)
+                throw new ArgumentException(
+                    "No Work Items could be found for release, please ensure that your build has linked work items!");
+
             return validWorkItems;
         }
 

@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -49,8 +50,8 @@ namespace ServiceNowCLI.Core.Arguments
                 return new List<int>();
             }
 
-            return AddWorkitems.Split(',', System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => int.Parse(x.Trim())).ToList();
+            return AddWorkitems.Split(',', System.StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(int.Parse).ToList();
         }
     }
 
