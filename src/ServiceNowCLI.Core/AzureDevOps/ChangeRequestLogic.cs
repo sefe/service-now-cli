@@ -64,8 +64,18 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             ValidateBranchUsedForBuild(buildLogic, build, crInputs, isProd, pipeline.Configuration.Type == ConfigurationType.Yaml);
 
-            var buildLinkedWorkItemReferences = buildLogic.GetBuildLinkedWorkItems(build);
-            var workItems = workItemLogic.GetWorkItemsLinkedToBuild(buildLinkedWorkItemReferences, build, arguments);
+            var buildLinkedWorkItemIds = buildLogic.GetBuildLinkedWorkItemIds(build);
+            var addWorkitemIds = arguments.GetAddWorkitemIds();
+            if (addWorkitemIds.Count > 0)
+            {
+                Console.WriteLine($"Checking additional {addWorkitemIds.Count} work items specified in arguments");
+            }
+
+            var allWorkitemIds = buildLinkedWorkItemIds.Concat(addWorkitemIds).Distinct().ToList();
+            var allWorkitems = workItemLogic.GetWorkItems(allWorkitemIds);
+
+            var workItems = workItemLogic.FilterWorkitemsLinkedToBuild(allWorkitems, build, arguments);
+
             var changeDescriptions = changeDescriptionGenerator.GenerateChangeDescription(workItems);
 
             var changeRequest = CreateChangeRequest(crInputs, arguments, changeDescriptions);

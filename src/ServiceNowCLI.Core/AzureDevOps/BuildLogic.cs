@@ -117,21 +117,18 @@ namespace ServiceNowCLI.Core.AzureDevOps
             return build;
         }
 
-        public List<ResourceRef> GetBuildLinkedWorkItems(Build build)
+        public List<int> GetBuildLinkedWorkItemIds(Build build)
         {
-            Console.WriteLine($"Getting linked work items from BuildNumber={build.BuildNumber}, BuildId={build.Id}");
+            Console.WriteLine($"Getting referenced work items from BuildNumber={build.BuildNumber}, BuildId={build.Id}");
 
-            var workItems = _buildsClient.GetBuildWorkItemsRefsAsync(build.Project.Id, build.Id).GetAwaiter().GetResult();
+            var workItemsRef = _buildsClient.GetBuildWorkItemsRefsAsync(build.Project.Id, build.Id).GetAwaiter().GetResult();
 
-            if (workItems.Count == 0)
-                throw new ArgumentException(
-                    "No Work Items could be found for release, please ensure that your build has linked work items!");
+            var workItemIds = workItemsRef.Select(wi => int.Parse(wi.Id)).ToList();
 
-            var workItemsForConsole = string.Join(", ",workItems.Select(x => x.Id));
+            var workItemsForConsole = string.Join(", ",workItemIds);
+            Console.WriteLine($"{workItemIds.Count} referenced work items found for BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
 
-            Console.WriteLine($"{workItems.Count} linked work items found for BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
-
-            return workItems;
+            return workItemIds;
         }
 
         public List<string> GetBranchesForTag(string tagName, string repoId)
