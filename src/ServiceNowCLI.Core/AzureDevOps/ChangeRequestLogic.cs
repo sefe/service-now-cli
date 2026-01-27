@@ -71,9 +71,10 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 Console.WriteLine($"Checking additional {addWorkitemIds.Count} work items specified in arguments");
             }
 
-            var addWorkitems = workItemLogic.GetWorkItems(buildLinkedWorkItemIds.Concat(addWorkitemIds).ToList());
+            var allWorkitemIds = buildLinkedWorkItemIds.Concat(addWorkitemIds).Distinct().ToList();
+            var allWorkitems = workItemLogic.GetWorkItems(allWorkitemIds);
 
-            var workItems = workItemLogic.FilterWorkitemsLinkedToBuild(addWorkitems, build, arguments);
+            var workItems = workItemLogic.FilterWorkitemsLinkedToBuild(allWorkitems, build, arguments);
 
             var changeDescriptions = changeDescriptionGenerator.GenerateChangeDescription(workItems);
 
