@@ -119,14 +119,14 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         public List<int> GetBuildLinkedWorkItemIds(Build build)
         {
-            Console.WriteLine($"Getting linked work items from BuildNumber={build.BuildNumber}, BuildId={build.Id}");
+            Console.WriteLine($"Getting referenced work items from BuildNumber={build.BuildNumber}, BuildId={build.Id}");
 
             var workItemsRef = _buildsClient.GetBuildWorkItemsRefsAsync(build.Project.Id, build.Id).GetAwaiter().GetResult();
 
             var workItemIds = workItemsRef.Select(wi => int.Parse(wi.Id)).ToList();
 
-            var workItemsForConsole = string.Join(", ",workItemIds.Select(x => x));
-            Console.WriteLine($"{workItemIds.Count} linked work items found for BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
+            var workItemsForConsole = string.Join(", ",workItemIds);
+            Console.WriteLine($"{workItemIds.Count} referenced work items found for BuildNumber={build.BuildNumber}, BuildId={build.Id}: {workItemsForConsole}");
 
             return workItemIds;
         }

@@ -35,6 +35,11 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
         public List<WorkItem> GetWorkItems(List<int> workItemIds)
         {
+            if (workItemIds == null || workItemIds.Count == 0)
+            {
+                return new List<WorkItem>();
+            }
+
             var workItems = _workItemTrackingHttpClient.GetWorkItemsBatchAsync(new WorkItemBatchGetRequest 
             { 
                 Ids = workItemIds, 
@@ -66,7 +71,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
             if (validWorkItems.Count == 0)
                 throw new ArgumentException(
-                    "No Work Items could be found for release, please ensure that your build has linked work items!");
+                    "No Work Items could be found for release. Either your build has no linked work items, or the specified work items did not meet the filtering criteria.");
 
             return validWorkItems;
         }
