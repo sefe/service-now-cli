@@ -49,6 +49,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             var vssConnection = vssConnectionFactory.CreateVssConnection(adoSettings);
 
             var crInputs = JsonConvert.DeserializeObject<CreateChangeRequestInput>(inputContent);
+            crInputs.Validate();
             var commSettings = GetCommSettings(arguments.CommParamsFile);
             var buildLogic = new BuildLogic(crInputs.TeamProjectName, adoSettings, tokenHandler, vssConnection);
             var workItemLogic = new WorkItemLogic(crInputs.TeamProjectName, adoSettings, tokenHandler, vssConnection);
@@ -167,7 +168,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                     return buildFromReleaseId;
                 }
             }
-            
+
             var buildArgument = arguments.BuildNumber;
 
             if (buildArgument.Contains(';'))
@@ -175,7 +176,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 throw new ArgumentException($"BuildNumber in CLI arguments is [{arguments.BuildNumber}], which contains a semi-colon. Only single builds are supported");
             }
 
-            var buildFromBuildNumberInArguments = buildLogic.GetBuildForBuildNumber(arguments.BuildNumber) 
+            var buildFromBuildNumberInArguments = buildLogic.GetBuildForBuildNumber(arguments.BuildNumber)
                 ?? throw new ArgumentException($"Unable to get build definition for build number {arguments.BuildNumber} specified in CLI tool arguments");
 
             return buildFromBuildNumberInArguments;
@@ -223,7 +224,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 {
                     Console.WriteLine($"Comm inputs json file does not exist - {commParamsFile}");
                 }
-                
+
             }
             else
             {
@@ -274,12 +275,12 @@ namespace ServiceNowCLI.Core.AzureDevOps
         }
 
         private void AddCrNumberTagToPbis(
-            List<WorkItem> workItems, 
+            List<WorkItem> workItems,
             WorkItemLogic workItemLogic,
             string newTag)
         {
             Console.WriteLine($"Adding CR tag '{newTag}' to work items: {string.Join(",", workItems.Select(x => x.Id).ToList())}");
-            
+
             foreach (var workItem in workItems)
             {
                 workItemLogic.AddTagToWorkItem(workItem, newTag);
@@ -289,7 +290,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
         private ChangeRequestModel CreateChangeRequest(CreateChangeRequestInput crInputs, CreateCrOptions arguments, List<string> changeDescriptions)
         {
             var crDescription = string.Join(Environment.NewLine, changeDescriptions);
-            
+
             if (!string.IsNullOrWhiteSpace(crInputs.description))
             {
                 crDescription = $"{crDescription}{Environment.NewLine}{Environment.NewLine}{crInputs.description}";
@@ -302,7 +303,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
                 requested_by = arguments.ReleaseDeploymentRequestedFor,
                 correlation_id = string.IsNullOrEmpty(crInputs.correlation_id) ? arguments.ExistingCr : null
             };
-        } 
+        }
 
         private Dictionary<string, string> CollectPipelineVariablesToSet(List<string> changeChangesList, string crNumber, DateTime startDateTime, DateTime endDateTime, CommSettings commSettings)
         {
@@ -321,8 +322,8 @@ namespace ServiceNowCLI.Core.AzureDevOps
         }
 
         private void AddCommSettingVariables(
-            Dictionary<string, string> variables, 
-            CommSettings commSettings, 
+            Dictionary<string, string> variables,
+            CommSettings commSettings,
             List<string> changesList)
         {
             if (commSettings is null)
@@ -399,7 +400,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
                 Console.WriteLine($"If this was a production deploy, the build isn't a valid branch for release and so would fail here.");
             }
-            
+
             if (!isYamlPipeline && build.RetainedByRelease != true && build.KeepForever != true)
             {
                 throw new ArgumentException($"Cannot raise a CR for Build {build.BuildNumber} as this is not a pinned build. Pin the build and re-run the CR Creator");

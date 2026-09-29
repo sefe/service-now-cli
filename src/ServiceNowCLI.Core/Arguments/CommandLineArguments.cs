@@ -57,7 +57,7 @@ namespace ServiceNowCLI.Core.Arguments
 
     public class SetActivityOptions
     {
-        [Option('n', "closenote", Required = false, HelpText = "Close note for Change Request.")]
+        [Option('n', "closenote", Required = true, HelpText = "Close note for Change Request.")]
         public string CloseNote { get; set; }
 
         [Option('r', "changeno", Required = true, HelpText = "Change Request to Update, in format 'CR123456'.")]
@@ -73,7 +73,7 @@ namespace ServiceNowCLI.Core.Arguments
     [Verb("activityfailed", HelpText = "Clone a repository into a new directory.")]
     public class ActivityFailedOptions : SetActivityOptions
     {
-        
+
     }
 
     [Verb("cancelcrs", HelpText = "Cancel CR or the list of CRs.")]

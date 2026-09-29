@@ -1,4 +1,7 @@
-﻿namespace ServiceNowCLI.Core.Arguments
+﻿using System;
+using System.Text;
+
+namespace ServiceNowCLI.Core.Arguments
 {
     public class ImpactQuestionResponses
     {
@@ -49,6 +52,22 @@
         public string type { get; set; }
         public string urgency { get; set; }
         public string work_notes { get; set; }
+
+        public void Validate()
+        {
+            var errors = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(assignment_group)) errors.AppendLine("assignment_group is required.");
+            if (string.IsNullOrWhiteSpace(short_description)) errors.AppendLine("short_description is required.");
+            if (string.IsNullOrWhiteSpace(category)) errors.AppendLine("category is required.");
+            if (string.IsNullOrWhiteSpace(requested_by)) errors.AppendLine("requested_by is required.");
+            if (string.IsNullOrWhiteSpace(risk_impact_analysis)) errors.AppendLine("risk_impact_analysis is required.");
+            if (string.IsNullOrWhiteSpace(backout_plan)) errors.AppendLine("backout_plan is required.");
+            if (string.IsNullOrWhiteSpace(test_plan)) errors.AppendLine("test_plan is required.");
+            if (string.IsNullOrWhiteSpace(implementation_plan)) errors.AppendLine("implementation_plan is required.");
+            if (string.IsNullOrWhiteSpace(service_offering)) errors.AppendLine("service_offering is required.");
+            if (errors.Length > 0)
+                throw new ArgumentException($"Validation failed for CreateChangeRequestInput:\n{errors.ToString()}");
+        }
         #endregion
     }
 }
