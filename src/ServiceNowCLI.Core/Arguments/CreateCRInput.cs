@@ -59,7 +59,6 @@ namespace ServiceNowCLI.Core.Arguments
             if (string.IsNullOrWhiteSpace(assignment_group)) errors.AppendLine("assignment_group is required.");
             if (string.IsNullOrWhiteSpace(short_description)) errors.AppendLine("short_description is required.");
             if (string.IsNullOrWhiteSpace(category)) errors.AppendLine("category is required.");
-            if (string.IsNullOrWhiteSpace(requested_by)) errors.AppendLine("requested_by is required.");
             if (string.IsNullOrWhiteSpace(risk_impact_analysis)) errors.AppendLine("risk_impact_analysis is required.");
             if (string.IsNullOrWhiteSpace(backout_plan)) errors.AppendLine("backout_plan is required.");
             if (string.IsNullOrWhiteSpace(test_plan)) errors.AppendLine("test_plan is required.");
