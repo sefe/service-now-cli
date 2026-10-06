@@ -12,14 +12,14 @@ namespace ServiceNowCLI.Core
         {
             // dates should be in GMT, SM will shift to local
             var parser = new Chronic.Core.Parser();
-            var scheduledStartDate = parser.Parse(inputs.ScheduledStartDate) 
+            var scheduledStartDate = parser.Parse(inputs.ScheduledStartDate)
                 ?? throw new ArgumentException("Unable to parse the Scheduled Start Time, please use a known format from Chronic, https://github.com/robertwilczynski/nChronic");
 
             ScheduledStartDate = DateTime.UtcNow;
-            if (scheduledStartDate.Start != null) 
-                ScheduledStartDate = ((DateTime) scheduledStartDate.Start).ToUniversalTime();
+            if (scheduledStartDate.Start != null)
+                ScheduledStartDate = ((DateTime)scheduledStartDate.Start).ToUniversalTime();
 
-            var scheduledEndDate = parser.Parse(inputs.ScheduledEndDate) 
+            var scheduledEndDate = parser.Parse(inputs.ScheduledEndDate)
                 ?? throw new ArgumentException("Unable to parse the Scheduled End Time, please use a known format from Chronic, https://github.com/robertwilczynski/nChronic");
 
             ScheduledEndDate = DateTime.UtcNow;
@@ -27,7 +27,7 @@ namespace ServiceNowCLI.Core
                 ScheduledEndDate = ((DateTime)scheduledEndDate.Start).ToUniversalTime();
 
             start_date = ScheduledStartDate.ToString(DateTimeFormat);
-            end_date = ScheduledEndDate.ToString(DateTimeFormat);            
+            end_date = ScheduledEndDate.ToString(DateTimeFormat);
 
             assignment_group = inputs.assignment_group;
             backout_plan = inputs.backout_plan;
@@ -52,6 +52,10 @@ namespace ServiceNowCLI.Core
             type = inputs.type;
             urgency = inputs.urgency;
             work_notes = inputs.work_notes;
+            assigned_to = inputs.assigned_to;
+            change_level = inputs.change_level;
+            post_implementation_validation_plan = inputs.post_implementation_validation_plan;
+            pre_implementation_test_results = inputs.pre_implementation_test_results;
         }
 
         public string assignment_group { get; set; }
@@ -82,5 +86,9 @@ namespace ServiceNowCLI.Core
 
         public DateTime ScheduledStartDate { get; set; }
         public DateTime ScheduledEndDate { get; set; }
+        public string assigned_to { get; set; }
+        public string change_level { get; set; }
+        public string post_implementation_validation_plan { get; set; }
+        public string pre_implementation_test_results { get; set; }
     }
 }
