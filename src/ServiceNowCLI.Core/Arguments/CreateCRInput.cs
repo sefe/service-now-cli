@@ -1,4 +1,7 @@
-﻿namespace ServiceNowCLI.Core.Arguments
+﻿using System;
+using System.Text;
+
+namespace ServiceNowCLI.Core.Arguments
 {
     public class ImpactQuestionResponses
     {
@@ -27,9 +30,11 @@
 
         #region ServiceNow fields
         public string assignment_group { get; set; }
+        public string assigned_to { get; set; }
         public string backout_plan { get; set; }
         public string business_service { get; set; }
         public string category { get; set; }
+        public string change_level { get; set; }
         public string chg_model { get; set; }
         public string cmdb_ci { get; set; }
         public string correlation_id { get; set; }
@@ -37,6 +42,8 @@
         public string impact { get; set; }
         public string implementation_plan { get; set; }
         public string justification { get; set; }
+        public string post_implementation_validation_plan { get; set; }
+        public string pre_implementation_test_results { get; set; }
         public string priority { get; set; }
         public string reason { get; set; }
         public string requested_by { get; set; }
@@ -49,6 +56,25 @@
         public string type { get; set; }
         public string urgency { get; set; }
         public string work_notes { get; set; }
+
+        public void Validate()
+        {
+            var errors = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(assigned_to)) errors.AppendLine("assigned_to is required.");
+            if (string.IsNullOrWhiteSpace(assignment_group)) errors.AppendLine("assignment_group is required.");
+            if (string.IsNullOrWhiteSpace(short_description)) errors.AppendLine("short_description is required.");
+            if (string.IsNullOrWhiteSpace(category)) errors.AppendLine("category is required.");
+            if (string.IsNullOrWhiteSpace(risk_impact_analysis)) errors.AppendLine("risk_impact_analysis is required.");
+            if (string.IsNullOrWhiteSpace(backout_plan)) errors.AppendLine("backout_plan is required.");
+            if (string.IsNullOrWhiteSpace(test_plan)) errors.AppendLine("test_plan is required.");
+            if (string.IsNullOrWhiteSpace(implementation_plan)) errors.AppendLine("implementation_plan is required.");
+            if (string.IsNullOrWhiteSpace(post_implementation_validation_plan)) errors.AppendLine("post_implementation_validation_plan is required.");
+            if (string.IsNullOrWhiteSpace(pre_implementation_test_results)) errors.AppendLine("pre_implementation_test_results is required.");
+            if (string.IsNullOrWhiteSpace(service_offering)) errors.AppendLine("service_offering is required.");
+            if (string.IsNullOrWhiteSpace(urgency)) errors.AppendLine("urgency is required.");
+            if (errors.Length > 0)
+                throw new ArgumentException($"Validation failed for CreateChangeRequestInput:\n{errors.ToString()}");
+        }
         #endregion
     }
 }
