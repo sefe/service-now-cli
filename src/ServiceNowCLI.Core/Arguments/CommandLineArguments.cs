@@ -43,6 +43,12 @@ namespace ServiceNowCLI.Core.Arguments
         [Option('a', "addWorkitems", Required = false, Default = "", HelpText = "Comma-separated list of work item IDs to add to the CR (e.g., 123,456,789)")]
         public string AddWorkitems { get; set; }
 
+        [Option("skipSecurityValidation", Required = false, Default = false, HelpText = "If set, skips calling the pre-AutoCR CR Security Validator endpoint.")]
+        public bool SkipSecurityValidation { get; set; }
+
+        [Option("securityValidatorUrl", Required = false, Default = "", HelpText = "Optional URL override for the CR Security Validator service.")]
+        public string SecurityValidatorUrl { get; set; }
+
         public List<int> GetAddWorkitemIds()
         {
             if (string.IsNullOrWhiteSpace(AddWorkitems))
@@ -53,6 +59,11 @@ namespace ServiceNowCLI.Core.Arguments
             return AddWorkitems.Split(',', System.StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(int.Parse).ToList();
         }
+    }
+
+    [Verb("validatesecurity", HelpText = "Validate build, branch, PBIs, and Aikido security posture via CR Security Validator ahead of AutoCR creation.")]
+    public class ValidateSecurityOptions : CreateCrOptions
+    {
     }
 
     public class SetActivityOptions

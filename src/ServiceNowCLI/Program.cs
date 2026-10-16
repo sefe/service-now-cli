@@ -53,13 +53,15 @@ namespace ServiceNowCLI
 
             Console.WriteLine($"Starting ServiceNowCLI - command line arguments: {JsonConvert.SerializeObject(args)}");
 
-            Parser.Default.ParseArguments<CreateCrOptions, 
+            Parser.Default.ParseArguments<ValidateSecurityOptions,
+                CreateCrOptions, 
                 ActivitySuccessOptions, 
                 ActivityFailedOptions, 
                 SetReleaseVariableOptions, 
                 CancelCrsOptions,
                 GenerateSecurityReportOptions>(args)
                 .MapResult(
+                    (ValidateSecurityOptions opts) => RunValidateSecurityAndReturnExitCode(opts),
                     (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts),
                     (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts),
                     (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts),
@@ -113,7 +115,8 @@ namespace ServiceNowCLI
             {
                 ApiUrl = ConfigurationManager.AppSettings["ServiceNowApiUrl"],
                 SubscriptionHeaderName = "subscription-key",
-                SubscriptionHeaderValue = ConfigurationManager.AppSettings["ServiceNowApiSubscriptionKey"]
+                SubscriptionHeaderValue = ConfigurationManager.AppSettings["ServiceNowApiSubscriptionKey"],
+                CrSecurityValidatorUrl = ConfigurationManager.AppSettings["CrSecurityValidatorUrl"]
             };
         }
 
@@ -167,6 +170,16 @@ namespace ServiceNowCLI
 
             arguments.ExistingCr = arguments.ExistingCr.Replace("'", string.Empty);
             crLogic.CreateChangeRequest(arguments);
+            return 0;
+        }
+
+        public static object RunValidateSecurityAndReturnExitCode(
+            ValidateSecurityOptions arguments)
+        {
+            var crLogic = CreateChangeRequestLogic();
+
+            arguments.ExistingCr = (arguments.ExistingCr ?? string.Empty).Replace("'", string.Empty);
+            crLogic.ValidateSecurity(arguments);
             return 0;
         }
 
