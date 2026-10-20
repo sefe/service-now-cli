@@ -36,7 +36,7 @@ stages:
         displayName: 'Prepare the SonarQube analysis'
         inputs:
           SonarQube: 'SonarQube'
-          scannerMode: 'MSBuild'
+          scannerMode: 'dotnet'
           projectKey: '$(projectKey)'
           projectName: '$(projectKey)'
           projectVersion: '$(Build.BuildNumber)'
