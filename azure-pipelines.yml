@@ -32,14 +32,16 @@ stages:
         inputs:
           restoreSolution: '$(solution)'
 
-      - task: SonarQubePrepare@5
+      - task: SonarQubePrepare@8
         displayName: 'Prepare the SonarQube analysis'
         inputs:
           SonarQube: 'SonarQube'
-          scannerMode: 'MSBuild'
+          scannerMode: 'dotnet'
           projectKey: '$(projectKey)'
           projectName: '$(projectKey)'
           projectVersion: '$(Build.BuildNumber)'
+          extraProperties: |
+            sonar.scanner.skipJreProvisioning=false
         continueOnError: false
 
       - task: richardfennellbm.BM-VSTS-Versioning-Task.Version-DotNetCoreAssemblies-Task.VersionDotNetCoreAssemblies@3
@@ -58,7 +60,7 @@ stages:
           platform: '$(buildPlatform)'
           configuration: '$(buildConfiguration)'
 
-      - task: SonarQubeAnalyze@5
+      - task: SonarQubeAnalyze@8
 
       - task: CopyFiles@2
         displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
