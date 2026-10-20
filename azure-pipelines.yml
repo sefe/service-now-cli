@@ -32,7 +32,7 @@ stages:
         inputs:
           restoreSolution: '$(solution)'
 
-      - task: SonarQubePrepare@5
+      - task: SonarQubePrepare@8
         displayName: 'Prepare the SonarQube analysis'
         inputs:
           SonarQube: 'SonarQube'
@@ -60,7 +60,7 @@ stages:
           platform: '$(buildPlatform)'
           configuration: '$(buildConfiguration)'
 
-      - task: SonarQubeAnalyze@5
+      - task: SonarQubeAnalyze@8
 
       - task: CopyFiles@2
         displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
