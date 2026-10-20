@@ -2,10 +2,12 @@
 {
     public class SnChangeRequestModel : ISnCreateChangeRequestModel
     {
+        public string assigned_to { get; set; }
         public string assignment_group { get; set; }
         public string backout_plan { get; set; }
         public string business_service { get; set; }
         public string category { get; set; }
+        public string change_level { get; set; }
         public string chg_model { get; set; }
         public string close_code { get; set; }
         public string close_notes { get; set; }
@@ -16,6 +18,8 @@
         public string impact { get; set; }
         public string implementation_plan { get; set; }
         public string justification { get; set; }
+        public string post_implementation_validation_plan { get; set; }
+        public string pre_implementation_test_results { get; set; }
         public string priority { get; set; }
         public string reason { get; set; }
         public string requested_by { get; set; }

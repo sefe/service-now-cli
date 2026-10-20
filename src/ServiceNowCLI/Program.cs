@@ -54,20 +54,44 @@ namespace ServiceNowCLI
             Console.WriteLine($"Starting ServiceNowCLI - command line arguments: {JsonConvert.SerializeObject(args)}");
 
             Parser.Default.ParseArguments<ValidateSecurityOptions,
-                CreateCrOptions, 
-                ActivitySuccessOptions, 
-                ActivityFailedOptions, 
-                SetReleaseVariableOptions, 
+                CreateCrOptions,
+                ActivitySuccessOptions,
+                ActivityFailedOptions,
+                SetReleaseVariableOptions,
                 CancelCrsOptions,
                 GenerateSecurityReportOptions>(args)
                 .MapResult(
                     (ValidateSecurityOptions opts) => RunValidateSecurityAndReturnExitCode(opts),
-                    (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts),
-                    (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts),
-                    (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts),
-                    (SetReleaseVariableOptions opts) => RunSetReleasePipelineVariableValueAndReturnExitCode(opts),
-                    (CancelCrsOptions opts) => RunCancelChangeRequestNum(opts),
-                    (GenerateSecurityReportOptions opts) => RunGenerateSastReport(opts),
+                    (CreateCrOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunCreateChangeRequestAndReturnExitCode(opts);
+                    },
+                    (ActivitySuccessOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunActivitySuccessAndReturnExitCode(opts);
+                    },
+                    (ActivityFailedOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunActivityFailedAndReturnExitCode(opts);
+                    },
+                    (SetReleaseVariableOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunSetReleasePipelineVariableValueAndReturnExitCode(opts);
+                    },
+                    (CancelCrsOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunCancelChangeRequestNum(opts);
+                    },
+                    (GenerateSecurityReportOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunGenerateSastReport(opts);
+                    },
                     errs => HandleArgumentParsingError(errs));
 
             activity.Stop();
@@ -80,7 +104,7 @@ namespace ServiceNowCLI
             var aikidoSettings = GetAikidoSettings();
             var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
             aikidoLogic.GenerateIssuesReport(opts.RepoName, opts.Filename ?? $"security_report_{opts.RepoName}_{DateTime.UtcNow.ToUnixEpochTime()}.pdf", opts.IssuesPathFilter);
-            
+
             return 0;
         }
 
@@ -126,9 +150,9 @@ namespace ServiceNowCLI
             throw new ArgumentException("Failed to parse command line arguments");
         }
 
-        private static 
-            (AzureDevOpsSettings adoSettings, 
-            AzureDevOpsTokenHandler tokenHandler, 
+        private static
+            (AzureDevOpsSettings adoSettings,
+            AzureDevOpsTokenHandler tokenHandler,
             VssConnectionFactory vssConnectionFactory)
             GetAdoObjects()
         {
@@ -195,7 +219,7 @@ namespace ServiceNowCLI
             };
 
             releaseLogic.UpdateReleaseVariables(arguments.ReleaseId, variableNamesAndValues);
-            
+
             return 0;
         }
 
