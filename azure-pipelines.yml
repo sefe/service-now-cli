@@ -40,6 +40,8 @@ stages:
           projectKey: '$(projectKey)'
           projectName: '$(projectKey)'
           projectVersion: '$(Build.BuildNumber)'
+          extraProperties: |
+            sonar.scanner.skipJreProvisioning=false
         continueOnError: false
 
       - task: richardfennellbm.BM-VSTS-Versioning-Task.Version-DotNetCoreAssemblies-Task.VersionDotNetCoreAssemblies@3
