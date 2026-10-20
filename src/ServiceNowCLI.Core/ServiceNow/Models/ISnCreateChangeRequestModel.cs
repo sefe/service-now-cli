@@ -2,10 +2,12 @@
 {
     public interface ISnCreateChangeRequestModel
     {
+        string assigned_to { get; set; }
         string assignment_group { get; set; }
         string backout_plan { get; set; }
         string business_service { get; set; }
         string category { get; set; }
+        string change_level { get; set; }
         string chg_model { get; set; }
         string cmdb_ci { get; set; }
         string correlation_id { get; set; }
@@ -14,6 +16,8 @@
         string impact { get; set; }
         string implementation_plan { get; set; }
         string justification { get; set; }
+        string post_implementation_validation_plan { get; set; }
+        string pre_implementation_test_results { get; set; }
         string priority { get; set; }
         string reason { get; set; }
         string requested_by { get; set; }

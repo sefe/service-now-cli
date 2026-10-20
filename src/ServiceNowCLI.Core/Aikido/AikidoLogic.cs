@@ -15,20 +15,20 @@ namespace ServiceNowCLI.Core.Aikido
             _apiClient = new AikidoApiClient(baseUrl, clientId, clientSecret);
         }
 
-        public bool GenerateIssuesReport(string repoName, string filename, string issuePathFilter = null)
+        public bool GenerateIssuesReport(string repoName, string filename, string issuePathFilter = null, string branchName = null, string externalRepoId = null)
         {
-            var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter);
+            var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter, branchName, externalRepoId);
             if (issues == null)
                 return false;
             ReportGenerator.GeneratePdfReport(repoName, issues, filename, _apiClient.LinkToIssues(repoId));
             return true;
         }
 
-        public bool GenerateIssuesReport(string repoName, Stream stream, string issuePathFilter = null)
+        public bool GenerateIssuesReport(string repoName, Stream stream, string issuePathFilter = null, string branchName = null, string externalRepoId = null)
         {
             try
             {
-                var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter);
+                var issues = GetIssuesForRepo(repoName, out var repoId, issuePathFilter, branchName, externalRepoId);
                 if (issues == null)
                     return false;
 
@@ -42,9 +42,9 @@ namespace ServiceNowCLI.Core.Aikido
             }
         }
 
-        public List<Issue> GetIssuesForRepo(string repoName, out int repoId, string pathFilter = null)
+        public List<Issue> GetIssuesForRepo(string repoName, out int repoId, string pathFilter = null, string branchName = null, string externalRepoId = null)
         {
-            repoId = GetRepoId(repoName);
+            repoId = GetRepoId(repoName, branchName, externalRepoId);
             if (repoId == 0)
             {
                 Console.WriteLine($"No issues found for '{repoName}' in Aikido.");
@@ -65,10 +65,18 @@ namespace ServiceNowCLI.Core.Aikido
             return issues.Where(iss => iss.status == IssueStatuses.Open).ToList();
         }
 
-        private int GetRepoId(string repoName)
+        private int GetRepoId(string repoName, string branchName = null, string externalRepoId = null)
         {
             try
             {
+                var normalizedBranch = NormalizeBranchName(branchName);
+                var catalogMatchId = ResolveRepoIdFromCatalog(repoName, normalizedBranch, externalRepoId);
+                if (catalogMatchId != 0)
+                {
+                    Console.WriteLine($"Resolved Aikido repository ID {catalogMatchId} from catalog for '{repoName}' (branch: '{normalizedBranch ?? "default"}').");
+                    return catalogMatchId;
+                }
+
                 int currentPage = 0;
                 int perPage = 100;
                 int repoId = 0; // To store the repository ID once we find it
@@ -109,6 +117,90 @@ namespace ServiceNowCLI.Core.Aikido
                 Console.WriteLine($"Error: {ex.Message}");
                 throw;
             }
+        }
+
+        private int ResolveRepoIdFromCatalog(string repoName, string normalizedBranch, string externalRepoId)
+        {
+            try
+            {
+                var allRepos = new List<AikidoCodeRepository>();
+                for (var page = 0; page < 15; page++)
+                {
+                    var pageItems = _apiClient.GetCodeRepositories(page, 100);
+                    if (pageItems == null || pageItems.Count == 0)
+                    {
+                        break;
+                    }
+
+                    allRepos.AddRange(pageItems.Where(r => r.Active));
+                    if (pageItems.Count < 100)
+                    {
+                        break;
+                    }
+                }
+
+                var candidates = allRepos.Where(r =>
+                    (!string.IsNullOrWhiteSpace(externalRepoId) &&
+                     !string.IsNullOrWhiteSpace(r.ExternalRepoId) &&
+                     (r.ExternalRepoId.Equals(externalRepoId, StringComparison.OrdinalIgnoreCase) ||
+                      r.ExternalRepoId.StartsWith(externalRepoId + "_aikidoclone_", StringComparison.OrdinalIgnoreCase)))
+                    || (!string.IsNullOrWhiteSpace(repoName) &&
+                        !string.IsNullOrWhiteSpace(r.Name) &&
+                        r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+
+                if (candidates.Count == 0)
+                {
+                    return 0;
+                }
+
+                if (!string.IsNullOrWhiteSpace(normalizedBranch))
+                {
+                    var exactBranchMatch = candidates
+                        .Where(c => string.Equals(NormalizeBranchName(c.Branch), normalizedBranch, StringComparison.OrdinalIgnoreCase))
+                        .OrderByDescending(c => c.Id)
+                        .FirstOrDefault();
+
+                    if (exactBranchMatch != null)
+                    {
+                        return exactBranchMatch.Id;
+                    }
+                }
+
+                var primaryRepo = candidates
+                    .Where(c => string.IsNullOrWhiteSpace(c.ExternalRepoId) ||
+                                c.ExternalRepoId.IndexOf("_aikidoclone_", StringComparison.OrdinalIgnoreCase) < 0)
+                    .OrderBy(c => c.Id)
+                    .FirstOrDefault();
+
+                return (primaryRepo ?? candidates.First()).Id;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: failed to query Aikido code repository catalog ({ex.Message}); falling back to issue-groups lookup.");
+                return 0;
+            }
+        }
+
+        private static string NormalizeBranchName(string branch)
+        {
+            if (string.IsNullOrWhiteSpace(branch))
+            {
+                return null;
+            }
+
+            var trimmed = branch.Trim();
+            if (trimmed.StartsWith("refs/heads/", StringComparison.OrdinalIgnoreCase))
+            {
+                return trimmed.Substring("refs/heads/".Length);
+            }
+
+            if (trimmed.StartsWith("refs/tags/", StringComparison.OrdinalIgnoreCase))
+            {
+                return trimmed.Substring("refs/tags/".Length);
+            }
+
+            return trimmed;
         }
     }
 }

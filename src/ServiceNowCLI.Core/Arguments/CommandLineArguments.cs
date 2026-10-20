@@ -43,6 +43,12 @@ namespace ServiceNowCLI.Core.Arguments
         [Option('a', "addWorkitems", Required = false, Default = "", HelpText = "Comma-separated list of work item IDs to add to the CR (e.g., 123,456,789)")]
         public string AddWorkitems { get; set; }
 
+        [Option('s', "skipSecurityValidation", Required = false, Default = false, HelpText = "If set, skips calling the pre-AutoCR CR Security Validator endpoint.")]
+        public bool SkipSecurityValidation { get; set; }
+
+        [Option('v', "securityValidatorUrl", Required = false, Default = "", HelpText = "Optional URL override for the CR Security Validator service.")]
+        public string SecurityValidatorUrl { get; set; }
+
         public List<int> GetAddWorkitemIds()
         {
             if (string.IsNullOrWhiteSpace(AddWorkitems))
@@ -55,9 +61,14 @@ namespace ServiceNowCLI.Core.Arguments
         }
     }
 
+    [Verb("validatesecurity", HelpText = "Validate build, branch, PBIs, and Aikido security posture via CR Security Validator ahead of AutoCR creation.")]
+    public class ValidateSecurityOptions : CreateCrOptions
+    {
+    }
+
     public class SetActivityOptions
     {
-        [Option('n', "closenote", Required = false, HelpText = "Close note for Change Request.")]
+        [Option('n', "closenote", Required = true, HelpText = "Close note for Change Request.")]
         public string CloseNote { get; set; }
 
         [Option('r', "changeno", Required = true, HelpText = "Change Request to Update, in format 'CR123456'.")]
@@ -73,7 +84,7 @@ namespace ServiceNowCLI.Core.Arguments
     [Verb("activityfailed", HelpText = "Clone a repository into a new directory.")]
     public class ActivityFailedOptions : SetActivityOptions
     {
-        
+
     }
 
     [Verb("cancelcrs", HelpText = "Cancel CR or the list of CRs.")]
