@@ -62,18 +62,20 @@ namespace ServiceNowCLI.Core.Arguments
             var errors = new StringBuilder();
             if (string.IsNullOrWhiteSpace(assigned_to)) errors.AppendLine("assigned_to is required.");
             if (string.IsNullOrWhiteSpace(assignment_group)) errors.AppendLine("assignment_group is required.");
-            if (string.IsNullOrWhiteSpace(short_description)) errors.AppendLine("short_description is required.");
-            if (string.IsNullOrWhiteSpace(category)) errors.AppendLine("category is required.");
-            if (string.IsNullOrWhiteSpace(risk_impact_analysis)) errors.AppendLine("risk_impact_analysis is required.");
             if (string.IsNullOrWhiteSpace(backout_plan)) errors.AppendLine("backout_plan is required.");
-            if (string.IsNullOrWhiteSpace(test_plan)) errors.AppendLine("test_plan is required.");
+            if (string.IsNullOrWhiteSpace(business_service)) errors.AppendLine("business_service is required.");
+            if (string.IsNullOrWhiteSpace(category)) errors.AppendLine("category is required.");
             if (string.IsNullOrWhiteSpace(implementation_plan)) errors.AppendLine("implementation_plan is required.");
             if (string.IsNullOrWhiteSpace(post_implementation_validation_plan)) errors.AppendLine("post_implementation_validation_plan is required.");
             if (string.IsNullOrWhiteSpace(pre_implementation_test_results)) errors.AppendLine("pre_implementation_test_results is required.");
+            if (string.IsNullOrWhiteSpace(risk_impact_analysis)) errors.AppendLine("risk_impact_analysis is required.");
             if (string.IsNullOrWhiteSpace(service_offering)) errors.AppendLine("service_offering is required.");
+            if (string.IsNullOrWhiteSpace(short_description)) errors.AppendLine("short_description is required.");
+            if (string.IsNullOrWhiteSpace(test_plan)) errors.AppendLine("test_plan is required.");
             if (string.IsNullOrWhiteSpace(urgency)) errors.AppendLine("urgency is required.");
             if (errors.Length > 0)
                 throw new ArgumentException($"Validation failed for CreateChangeRequestInput:\n{errors.ToString()}");
+
         }
         #endregion
     }
