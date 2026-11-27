@@ -53,19 +53,45 @@ namespace ServiceNowCLI
 
             Console.WriteLine($"Starting ServiceNowCLI - command line arguments: {JsonConvert.SerializeObject(args)}");
 
-            Parser.Default.ParseArguments<CreateCrOptions, 
-                ActivitySuccessOptions, 
-                ActivityFailedOptions, 
-                SetReleaseVariableOptions, 
+            Parser.Default.ParseArguments<ValidateSecurityOptions,
+                CreateCrOptions,
+                ActivitySuccessOptions,
+                ActivityFailedOptions,
+                SetReleaseVariableOptions,
                 CancelCrsOptions,
                 GenerateSecurityReportOptions>(args)
                 .MapResult(
-                    (CreateCrOptions opts) => RunCreateChangeRequestAndReturnExitCode(opts),
-                    (ActivitySuccessOptions opts) => RunActivitySuccessAndReturnExitCode(opts),
-                    (ActivityFailedOptions opts) => RunActivityFailedAndReturnExitCode(opts),
-                    (SetReleaseVariableOptions opts) => RunSetReleasePipelineVariableValueAndReturnExitCode(opts),
-                    (CancelCrsOptions opts) => RunCancelChangeRequestNum(opts),
-                    (GenerateSecurityReportOptions opts) => RunGenerateSastReport(opts),
+                    (ValidateSecurityOptions opts) => RunValidateSecurityAndReturnExitCode(opts),
+                    (CreateCrOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunCreateChangeRequestAndReturnExitCode(opts);
+                    },
+                    (ActivitySuccessOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunActivitySuccessAndReturnExitCode(opts);
+                    },
+                    (ActivityFailedOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunActivityFailedAndReturnExitCode(opts);
+                    },
+                    (SetReleaseVariableOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunSetReleasePipelineVariableValueAndReturnExitCode(opts);
+                    },
+                    (CancelCrsOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunCancelChangeRequestNum(opts);
+                    },
+                    (GenerateSecurityReportOptions opts) =>
+                    {
+                        CommandLineArgumentsValidator.ValidateRequiredFields(opts);
+                        return RunGenerateSastReport(opts);
+                    },
                     errs => HandleArgumentParsingError(errs));
 
             activity.Stop();
@@ -78,7 +104,7 @@ namespace ServiceNowCLI
             var aikidoSettings = GetAikidoSettings();
             var aikidoLogic = new AikidoLogic(aikidoSettings.BaseUrl, aikidoSettings.ClientId, aikidoSettings.ClientSecret);
             aikidoLogic.GenerateIssuesReport(opts.RepoName, opts.Filename ?? $"security_report_{opts.RepoName}_{DateTime.UtcNow.ToUnixEpochTime()}.pdf", opts.IssuesPathFilter);
-            
+
             return 0;
         }
 
@@ -113,7 +139,8 @@ namespace ServiceNowCLI
             {
                 ApiUrl = ConfigurationManager.AppSettings["ServiceNowApiUrl"],
                 SubscriptionHeaderName = "subscription-key",
-                SubscriptionHeaderValue = ConfigurationManager.AppSettings["ServiceNowApiSubscriptionKey"]
+                SubscriptionHeaderValue = ConfigurationManager.AppSettings["ServiceNowApiSubscriptionKey"],
+                CrSecurityValidatorUrl = ConfigurationManager.AppSettings["CrSecurityValidatorUrl"]
             };
         }
 
@@ -123,9 +150,9 @@ namespace ServiceNowCLI
             throw new ArgumentException("Failed to parse command line arguments");
         }
 
-        private static 
-            (AzureDevOpsSettings adoSettings, 
-            AzureDevOpsTokenHandler tokenHandler, 
+        private static
+            (AzureDevOpsSettings adoSettings,
+            AzureDevOpsTokenHandler tokenHandler,
             VssConnectionFactory vssConnectionFactory)
             GetAdoObjects()
         {
@@ -170,6 +197,16 @@ namespace ServiceNowCLI
             return 0;
         }
 
+        public static object RunValidateSecurityAndReturnExitCode(
+            ValidateSecurityOptions arguments)
+        {
+            var crLogic = CreateChangeRequestLogic();
+
+            arguments.ExistingCr = (arguments.ExistingCr ?? string.Empty).Replace("'", string.Empty);
+            crLogic.ValidateSecurity(arguments);
+            return 0;
+        }
+
         public static object RunSetReleasePipelineVariableValueAndReturnExitCode(
             SetReleaseVariableOptions arguments)
         {
@@ -182,7 +219,7 @@ namespace ServiceNowCLI
             };
 
             releaseLogic.UpdateReleaseVariables(arguments.ReleaseId, variableNamesAndValues);
-            
+
             return 0;
         }
 

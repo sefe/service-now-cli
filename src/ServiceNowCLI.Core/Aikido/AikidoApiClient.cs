@@ -189,5 +189,39 @@ namespace ServiceNowCLI.Core.Aikido
 
             return response.Data;
         }
+
+        public List<AikidoCodeRepository> GetCodeRepositories(int page = 0, int perPage = 100)
+        {
+            Authenticate();
+            var request = new RestRequest($"{_apiPrefix}repositories/code", Method.Get);
+            request.AddQueryParameter("page", page.ToString());
+            request.AddQueryParameter("per_page", perPage.ToString());
+
+            var response = _client.Execute(request);
+            if (!response.IsSuccessful || string.IsNullOrWhiteSpace(response.Content))
+            {
+                return new List<AikidoCodeRepository>();
+            }
+
+            return JsonConvert.DeserializeObject<List<AikidoCodeRepository>>(response.Content) ?? new List<AikidoCodeRepository>();
+        }
+    }
+
+    internal class AikidoCodeRepository
+    {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("external_repo_id")]
+        public string ExternalRepoId { get; set; }
+
+        [JsonProperty("branch")]
+        public string Branch { get; set; }
+
+        [JsonProperty("active")]
+        public bool Active { get; set; } = true;
     }
 }
