@@ -8,8 +8,6 @@ using ServiceNowCLI.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http.Headers;
-using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -42,9 +40,9 @@ namespace ServiceNowCLI.Core.ServiceNow
 
         public SnChangeRequestResponseModel CreateCR(ISnCreateChangeRequestModel cr)
         {
-            var restRequest = new RestRequest(crUri);
+            var restRequest = new RestRequest(crUri, Method.Post);
             restRequest.AddJsonBody(cr);
-            var response = _client.Post(restRequest);
+            var response = _client.Execute(restRequest);
             if (response.StatusCode == System.Net.HttpStatusCode.Created)
             {
                 var res = JsonConvert.DeserializeObject<ResultObject<SnChangeRequestResponseModel>>(response.Content);
@@ -79,7 +77,7 @@ namespace ServiceNowCLI.Core.ServiceNow
             if (cr != null)
             {
                 var crType = cr.type.ToEnum<CrTypes>();
-                var crState = cr.state.ToEnum<CrStates>(); 
+                var crState = cr.state.ToEnum<CrStates>();
                 if (crState == CrStates.Closed)
                 {
                     Console.WriteLine($"CR {number} is already closed");
@@ -133,7 +131,7 @@ namespace ServiceNowCLI.Core.ServiceNow
         {
             var cr = GetCrByNumber(number);
 
-            if (cr != null) 
+            if (cr != null)
             {
                 return SetCrStateTo(cr.sys_id, newState, reason);
             }
