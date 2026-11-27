@@ -123,7 +123,14 @@ namespace ServiceNowCLI.Core.AzureDevOps
 
                 if (!string.IsNullOrWhiteSpace(configuredValidatorUrl))
                 {
-                    ValidateAutoCrSecurity(crInputs, arguments, build, workItems, changeRequest, isProd);
+                    try
+                    {
+                        ValidateAutoCrSecurity(crInputs, arguments, build, workItems, changeRequest, isProd);
+                    }
+                    catch (Exception ex) when (!isProd)
+                    {
+                        Console.WriteLine($"[WARNING] Pre-AutoCR security validation encountered an error in Non-Prod environment '{arguments.Environment}': {ex.Message}");
+                    }
                 }
                 else
                 {
@@ -507,7 +514,7 @@ namespace ServiceNowCLI.Core.AzureDevOps
             {
                 if (isProd)
                 {
-                    throw new ApplicationException(
+                    throw new InvalidOperationException(
                         $"Cannot raise a Production AutoCR for Build {build.BuildNumber} because the pre-creation security validation failed:\n{scanResponse.FormattedServiceNowCommentary}");
                 }
 
